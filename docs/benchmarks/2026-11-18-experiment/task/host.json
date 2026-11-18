@@ -1,0 +1,24 @@
+{
+  "sizes": [
+    4,
+    8,
+    16
+  ],
+  "ticks": 240,
+  "repeats": 3,
+  "heap": "6G",
+  "controller_capacity_override": null,
+  "jfr": false,
+  "benchmark_properties": [
+    "reborn.craftingExperiment=TASK"
+  ],
+  "source_commit": "2d1e35f219292793f07bf6a8827e59c887729ed2",
+  "date": "2026-11-18T10:17:49.199310+01:00",
+  "cpu": "Intel(R) Core(TM) Ultra 9 275HX",
+  "logical_cpus": 24,
+  "initial_load": [
+    2.5966796875,
+    3.009765625,
+    3.4091796875
+  ]
+}

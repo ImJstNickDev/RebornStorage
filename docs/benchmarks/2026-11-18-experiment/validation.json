@@ -1,0 +1,47 @@
+{
+  "task": [
+    {
+      "core": 125,
+      "local": 20,
+      "experimental": 114
+    },
+    {
+      "core": 129,
+      "local": 20,
+      "experimental": 114
+    }
+  ],
+  "pattern": [
+    {
+      "core": 124,
+      "local": 20,
+      "experimental": 114
+    },
+    {
+      "core": 128,
+      "local": 20,
+      "experimental": 114
+    }
+  ],
+  "production_commit": "2d1e35f",
+  "base_commit": "00928a2",
+  "jar_sha256": "5df91f056af5ff9a8dc54b9766631eb8b1b2f4e70d7781ee87e17aa5a10a4bfc",
+  "client": "All three wireless screens and both pages pass; monitor and page 2 screenshots visually inspected. Screens tested after the restored order had finished.",
+  "production_smoke": {
+    "exit_code": 0,
+    "before": {
+      "pending_tasks": 1,
+      "task_types": [
+        "rebornstorage:experimental_v6"
+      ],
+      "oak_planks": 120
+    },
+    "after": {
+      "pending_tasks": 0,
+      "task_types": [],
+      "oak_planks": 4000
+    },
+    "world": "run/production-experiment",
+    "forge": "36.2.26"
+  }
+}

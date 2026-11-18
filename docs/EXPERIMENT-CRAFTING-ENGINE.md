@@ -70,6 +70,17 @@ that fixture setup, a world whose spawn is away from the origin can leave the
 controller stopped; this was caught by the wireless test before any crafting.
 
 Performance runs compare the three modes in separate JVMs with equal sizes,
-inputs, CPU budgets and controller capacities. Detailed measurements and
-remaining limitations will accompany the results; passing a benchmark does
-not establish full-modpack or long-running multiplayer compatibility.
+inputs, CPU budgets and controller capacities. The
+[completed campaign](benchmarks/2026-11-18-experiment/README.md) contains
+42 complete crafting windows and 10,080 active ticks. At 32³, PATTERN reduces
+simple/nested tick time by 6.1%/8.7%; PATTERN plus TASK reduces it by
+46.4%/44.7%, restoring 20 TPS for the nested load. The 64³ nested case improves
+from 520.70 to 265.12 ms/tick against the preceding stable campaign, but still
+runs at only 3.76 TPS. Measured output counts per fixed tick window are unchanged.
+
+Both modes pass the two-start server suite and differential checks. Client
+screen tests pass, and the reobfuscated production JAR resumes and completes
+the saved 4,000-plank order on dedicated Forge. The report records the scope
+and remaining limitations; this does not establish full-modpack, mixed
+processing-machine or long-running multiplayer compatibility. No merge has
+been performed or authorized.

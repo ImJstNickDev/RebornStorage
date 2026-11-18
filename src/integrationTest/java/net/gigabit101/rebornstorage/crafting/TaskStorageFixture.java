@@ -8,5 +8,9 @@ public final class TaskStorageFixture {
         TaskItemStorage.restore(new ItemStorageDisk(null, -1, null).writeToNbt());
   }
 
+  public static boolean plainHooks() {
+    return StackCapabilityPolicy.hooksArePlain();
+  }
+
   private TaskStorageFixture() {}
 }

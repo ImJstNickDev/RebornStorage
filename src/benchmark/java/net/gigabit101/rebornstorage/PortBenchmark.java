@@ -17,7 +17,6 @@ import java.util.*;
 import net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter;
 import net.gigabit101.rebornstorage.init.ModBlocks;
 import net.gigabit101.rebornstorage.init.ModItems;
-import net.gigabit101.rebornstorage.items.ItemRebornStorageCell;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -228,18 +227,35 @@ public class PortBenchmark {
               ForgeRegistries.BLOCKS
                   .getValue(new ResourceLocation("refinedstorage:disk_drive"))
                   .defaultBlockState());
-          ItemStack disk = new ItemStack(ModItems.DISK_262144K.get());
-          ((ItemRebornStorageCell) disk.getItem())
-              .inventoryTick(
-                  disk,
-                  world,
-                  FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), "Benchmark")),
-                  0,
-                  false);
-          ((DiskDriveTile) world.getBlockEntity(CONTROLLER.west()))
-              .getNode()
-              .getDisks()
-              .insertItem(0, disk, false);
+          boolean extraStorage = Boolean.getBoolean("bench.extraStorageDisks");
+          Item diskItem =
+              extraStorage
+                  ? ForgeRegistries.ITEMS.getValue(
+                      new ResourceLocation("extrastorage", "disk_16384k"))
+                  : ModItems.DISK_262144K.get();
+          check(
+              diskItem
+                  instanceof com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskProvider,
+              "Missing benchmark disk");
+          int count = extraStorage ? 8 : 1;
+          result.put("disk_item", diskItem.getRegistryName().toString());
+          result.put("disk_count", count);
+          for (int slot = 0; slot < count; slot++) {
+            ItemStack disk = new ItemStack(diskItem);
+            diskItem.inventoryTick(
+                disk,
+                world,
+                FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), "Benchmark")),
+                0,
+                false);
+            check(
+                ((DiskDriveTile) world.getBlockEntity(CONTROLLER.west()))
+                    .getNode()
+                    .getDisks()
+                    .insertItem(slot, disk, false)
+                    .isEmpty(),
+                "Cannot install benchmark disk");
+          }
           phase("connecting");
         } else if (phaseTicks > 400)
           throw new IllegalStateException(

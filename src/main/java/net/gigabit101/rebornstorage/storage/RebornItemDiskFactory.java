@@ -22,6 +22,9 @@ public class RebornItemDiskFactory implements IStorageDiskFactory<ItemStack> {
 
   @Override
   public IStorageDisk<ItemStack> create(ServerWorld world, int capacity, @Nullable UUID owner) {
+    if (net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+        == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK)
+      return new RebornItemDisk(world, capacity, owner);
     return new ItemStorageDisk(world, capacity, owner) {
       @Override
       public ResourceLocation getFactoryId() {

@@ -73,6 +73,13 @@ final class TaskItemStorage extends ItemStorageDisk {
     countDelta -= amount;
   }
 
+  boolean growPlain(long expectedRevision, ItemStack destination, int count) {
+    if (expectedRevision != revision || getStored() == getCapacity()) return false;
+    destination.grow(count);
+    countDelta += count;
+    return true;
+  }
+
   boolean growOutput(long expectedRevision, ItemStack destination, ItemStack output) {
     if (expectedRevision != revision
         || getStored() == getCapacity()

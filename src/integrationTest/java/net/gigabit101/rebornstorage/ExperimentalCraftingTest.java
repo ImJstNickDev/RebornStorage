@@ -134,6 +134,7 @@ final class ExperimentalCraftingTest {
         "only fixed plain intermediate recipes skip remainder evaluation");
     if (output == Items.OAK_PLANKS && !variants && !tagged) {
       externalStorage(network, original.writeToNbt());
+      lateOutputCapabilities(network, original.getPattern(), original.writeToNbt());
       reentrantInputs(network, original.getPattern(), false);
       CapabilityProbe caps = new CapabilityProbe();
       net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(caps);
@@ -300,14 +301,70 @@ final class ExperimentalCraftingTest {
     CapabilityProbe.data.clear();
   }
 
+  private static void lateOutputCapabilities(
+      INetwork network, ICraftingPattern pattern, CompoundNBT tag) throws Exception {
+    Map<Integer, Integer> reference = null;
+    for (boolean fast : new boolean[] {false, true}) {
+      CraftingNode node =
+          fast ? new ExperimentalCraftingNode(pattern, tag) : new CraftingNode(network, tag);
+      ItemStorageDisk disk =
+          fast ? TaskStorageFixture.empty() : new ItemStorageDisk(null, -1, null);
+      disk.insert(new ItemStack(Items.OAK_LOG), 19, Action.PERFORM);
+      CapabilityProbe probe = new CapabilityProbe();
+      probe.item = Items.OAK_PLANKS;
+      CountingListener listener =
+          new CountingListener() {
+            @Override
+            public void onSingleDone(Node n) {
+              super.onSingleDone(n);
+              probe.phase = singles;
+              if (singles == 3) {
+                net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(probe);
+                check(
+                    !TaskStorageFixture.plainHooks(),
+                    "new output capability listener recognized inside the tick");
+              }
+            }
+          };
+      try {
+        check(
+            TaskStorageFixture.plainHooks(),
+            "audited Forge and Curios listeners recognized on the test server");
+        node.update(
+            network, 1, new NodeList(), disk, new FluidStorageDisk(null, -1, null), listener);
+        Map<Integer, Integer> amounts = new TreeMap<>();
+        for (ItemStack stack : disk.getRawStacks().get(Items.OAK_PLANKS)) {
+          stack.areCapsCompatible(
+              (net.minecraftforge.common.capabilities.CapabilityDispatcher) null);
+          CompoundNBT state = CapabilityProbe.data.get(stack);
+          amounts.merge(state == null ? -1 : state.getInt("phase"), stack.getCount(), Integer::sum);
+        }
+        check(
+            listener.singles == 6 && amounts.get(-1) == 12 && amounts.size() == 4,
+            "three distinct capability-bearing outputs after mid-order listener registration");
+        if (reference == null) reference = amounts;
+        else
+          check(
+              reference.equals(amounts),
+              "private intermediate variants match native RS after listener registration");
+      } finally {
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(probe);
+        CapabilityProbe.data.clear();
+      }
+    }
+  }
+
   public static final class CapabilityProbe {
+    Item item = Items.OAK_LOG;
+    int phase;
     static final IdentityHashMap<ItemStack, CompoundNBT> data = new IdentityHashMap<>();
 
     @net.minecraftforge.eventbus.api.SubscribeEvent
     public void attach(net.minecraftforge.event.AttachCapabilitiesEvent<ItemStack> event) {
       ItemStack stack = event.getObject();
-      if (stack.getItem() != Items.OAK_LOG) return;
+      if (stack.getItem() != item) return;
       CompoundNBT state = new CompoundNBT();
+      state.putInt("phase", phase);
       data.put(stack, state);
       event.addCapability(
           new net.minecraft.util.ResourceLocation("rebornstorage", "comparison_probe"),

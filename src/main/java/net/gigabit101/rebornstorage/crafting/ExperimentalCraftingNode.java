@@ -34,6 +34,7 @@ public final class ExperimentalCraftingNode extends CraftingNode {
   private final boolean eligible;
   private int consumedCrafts;
   private final ItemStack fixedResult;
+  private final net.minecraft.item.Item plainIntermediate;
   private final ItemStack[] fixedInputs;
   private final int[] fixedAmounts;
 
@@ -72,6 +73,14 @@ public final class ExperimentalCraftingNode extends CraftingNode {
     fixedResult =
         eligible && pattern instanceof ExperimentalPattern
             ? ((ExperimentalPattern) pattern).fixedResult(recipe)
+            : null;
+    plainIntermediate =
+        fixedResult != null
+                && !isRoot()
+                && fixedResult.getClass() == ItemStack.class
+                && StackCapabilityPolicy.supports(fixedResult.getItem())
+                && !fixedResult.getItem().canBeDepleted()
+            ? fixedResult.getItem()
             : null;
     fixedInputs = fixedResult == null ? null : ingredients.toArray(new ItemStack[0]);
     fixedAmounts =
@@ -221,6 +230,7 @@ public final class ExperimentalCraftingNode extends CraftingNode {
     long boundRevision = -1, outputRevision = -1;
     boolean allowBinding = true;
     ItemStack destination = ItemStack.EMPTY;
+    boolean plainDestination = false;
     for (int i = 0; i < container.getMaximumSuccessfulCraftingUpdates(); i++) {
       if (boundRevision != disk.revision() || !stillAvailable(matched)) {
         if (!match(disk, matched)) return;
@@ -236,16 +246,33 @@ public final class ExperimentalCraftingNode extends CraftingNode {
       }
       for (int j = 0; j < matched.length; j++) disk.consume(matched[j], fixedAmounts[j]);
       consumedCrafts++;
-      ItemStack output = fixedResult.copy();
-      if (output.isEmpty()) throw new IllegalStateException("Cannot have empty result");
-      if (isRoot()) {
-        // Network hooks may refuse all or part of this individual output.
-        output = network.insertItem(output, output.getCount(), Action.PERFORM);
-      }
-      if (!output.isEmpty() && !disk.growOutput(outputRevision, destination, output)) {
-        destination = disk.addOutput(output);
-        outputRevision =
-            !destination.isEmpty() && disk.singleton(destination) ? disk.revision() : -1;
+      boolean grewPlain =
+          plainDestination
+              && fixedResult.getItem() == plainIntermediate
+              && destination.getItem() == plainIntermediate
+              && fixedResult.getTag() == null
+              && destination.getTag() == null
+              && StackCapabilityPolicy.hooksArePlain()
+              && StackCapabilityPolicy.emptyPayload(fixedResult)
+              && disk.growPlain(outputRevision, destination, fixedResult.getCount());
+      if (!grewPlain) {
+        ItemStack output = fixedResult.copy();
+        if (output.isEmpty()) throw new IllegalStateException("Cannot have empty result");
+        if (isRoot()) output = network.insertItem(output, output.getCount(), Action.PERFORM);
+        if (!output.isEmpty()) {
+          if (disk.growOutput(outputRevision, destination, output)) {
+            // Only bind a destination after a real RS comparison has initialized its capabilities.
+            plainDestination =
+                destination.getItem() == plainIntermediate
+                    && StackCapabilityPolicy.hooksArePlain()
+                    && StackCapabilityPolicy.emptyPayload(destination);
+          } else {
+            destination = disk.addOutput(output);
+            outputRevision =
+                !destination.isEmpty() && disk.singleton(destination) ? disk.revision() : -1;
+            plainDestination = false;
+          }
+        }
       }
       next();
       listener.onSingleDone(this);

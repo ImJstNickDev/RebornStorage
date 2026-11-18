@@ -785,6 +785,47 @@ public class PortIntegrationTest {
   }
 
   @SuppressWarnings("unchecked")
+  private static void testDiskChanges(IStorageDisk<ItemStack> disk) {
+    ItemStack original = new ItemStack(Items.STICK);
+    ItemStack tagged = original.copy();
+    tagged.getOrCreateTag().putString("variant", "tagged");
+    int[] callbacks = {0};
+    disk.setSettings(
+        () -> {
+          callbacks[0]++;
+          if (callbacks[0] == 1) {
+            check(disk.getStored() == 2, "disk listener sees committed insert");
+            disk.insert(tagged, 3, Action.PERFORM);
+          }
+        },
+        () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
+    disk.insert(original, 2, Action.PERFORM);
+    check(disk.getStored() == 5 && callbacks[0] == 2, "reentrant insert updates both quantities");
+    int rejected = Integer.MAX_VALUE - (disk.getCapacity() - 5);
+    check(
+        disk.insert(original, Integer.MAX_VALUE, Action.SIMULATE).getCount() == rejected
+            && callbacks[0] == 2,
+        "partial simulated insert does not overflow or notify");
+    check(
+        disk.insert(original, Integer.MAX_VALUE, Action.PERFORM).getCount() == rejected
+            && callbacks[0] == 3,
+        "partial real insert notifies once");
+    check(
+        disk.extract(tagged, 100, 1, Action.SIMULATE).getCount() == 3 && callbacks[0] == 3,
+        "exact simulated extraction retains tagged variant");
+    check(
+        disk.extract(original, Integer.MAX_VALUE, 1, Action.PERFORM).getCount()
+            == disk.getCapacity() - 3,
+        "plain extraction preserves tagged items");
+    check(
+        disk.extract(tagged, 10, 1, Action.PERFORM).getCount() == 3
+            && disk.getStored() == 0
+            && callbacks[0] == 5,
+        "final tagged extraction empties disk");
+    disk.setSettings(
+        () -> {}, () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
+  }
+
   private static void disks(ServerWorld world) {
     FakePlayer player =
         FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), "PortTest"));
@@ -801,6 +842,11 @@ public class PortIntegrationTest {
       IStorageDisk<ItemStack> disk = API.instance().getStorageDiskManager(world).getByStack(stack);
       disk.setSettings(
           () -> {}, () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
+      if (k == 32768
+          && net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+              == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK) {
+        testDiskChanges(disk);
+      }
       check(disk.getCapacity() == k * 1000, k + "k exact decimal capacity");
       check(
           disk.insert(new ItemStack(Items.COBBLESTONE), k * 1000, Action.PERFORM).isEmpty(),

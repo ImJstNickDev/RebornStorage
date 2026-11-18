@@ -119,6 +119,11 @@ public class PortBenchmark {
     result.put(
         "crafting_experiment",
         net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode().name());
+    if (Boolean.getBoolean("bench.inspectCapabilities")) {
+      result.put(
+          "plain_output_hooks",
+          net.gigabit101.rebornstorage.crafting.CapabilityPolicyProbe.plain());
+    }
     result.put("count_listeners", COUNT_LISTENERS);
     result.put("monitor_encoding", System.getProperty("bench.monitor", "none"));
     result.put("size", SIZE);

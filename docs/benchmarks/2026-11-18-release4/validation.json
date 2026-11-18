@@ -1,0 +1,43 @@
+{
+  "integration_core": [
+    134,
+    138
+  ],
+  "differential": [
+    140,
+    140
+  ],
+  "client": [
+    35,
+    1,
+    51
+  ],
+  "production": [
+    {
+      "jar_sha256": "1a05e7d15643d18ee2e70afe440fd1da8b74710ffabd9fe32e6126348b57a5e9",
+      "before": {
+        "tasks": [
+          "rebornstorage:experimental_v6"
+        ],
+        "stick": 96
+      },
+      "after": {
+        "tasks": [],
+        "stick": 4000
+      }
+    },
+    {
+      "jar_sha256": "1a05e7d15643d18ee2e70afe440fd1da8b74710ffabd9fe32e6126348b57a5e9",
+      "before": {
+        "tasks": [
+          "rebornstorage:experimental_v6"
+        ],
+        "stick": 96
+      },
+      "after": {
+        "tasks": [],
+        "stick": 4000
+      }
+    }
+  ]
+}

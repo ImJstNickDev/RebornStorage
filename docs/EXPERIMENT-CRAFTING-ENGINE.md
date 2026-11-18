@@ -2,7 +2,7 @@
 
 Branch: `experiment/crafting-engine-1.16.5`, based on stable `00928a2`.
 The user requires explicit authorization before merging into `port/forge-1.16.5`.
-Experimental artifact: `rebornstorage-1.16.5-0.1.3-experimental.3.jar`.
+Experimental artifact: `rebornstorage-1.16.5-0.1.3-experimental.4.jar`.
 
 ## Three comparable modes
 
@@ -46,6 +46,36 @@ commits its own changes before notifying RS. The Super Wireless Grid continues
 to send one snapshot per changed server tick. The
 [4³–64³ comparison](benchmarks/2026-11-18-guarded/README.md) records tick costs,
 throughput, listener counts, client observations and save compatibility.
+
+## Disk writes and private intermediates in experimental.4
+
+In TASK mode the four Reborn item disks maintain one live item count for normal
+writes, extracts and simulations. A repeated insert can reuse the variant list
+for the previous item. Selection still uses the RS comparer. The backend checks
+capacity with subtraction, commits counts before notifying the disk listener
+and marks the disk manager for saving. Existing disks keep their UUID, owner,
+factory ID and NBT representation. Switching modes on restart selects the
+corresponding backend when the disk is loaded.
+
+Eligible private intermediate outputs can grow an existing stack after a real
+RS comparison has established its identity. The executor checks the inventory
+revision, current item, tag, count and Forge hooks through the crafting loop.
+The result template must have no pending or attached capability payload. The
+final result always gets its own stack and passes through the public RS network.
+
+The check is specific to Forge 36.2.26 and EventBus 4. It inspects the actual
+dispatch array for `AttachCapabilitiesEvent<ItemStack>`. A new array triggers
+inspection before another reuse. Exact generic filters for other types are
+irrelevant. The recognized Curios 4.0.8.0 and 4.0.8.2 listener exits for the
+supported plain item classes. Other listeners, unresolved internals, modded
+item subclasses and dynamic outputs use the regular comparison and copy path.
+The implementation only reads the Forge fields. A single successful comparison
+does not establish that subsequent outputs can be reused.
+
+This optimization of intermediates applies with other storage destinations.
+Only inserts accepted by a Reborn disk benefit from the new disk backend.
+The [experimental.4 measurements](benchmarks/2026-11-18-release4/README.md)
+cover 4³ through 64³, an ExtraStorage-only 64³ and a separate 64³ on Cuboid Outpost LE 1.1.2. The full pack registers additional Forge hooks, so its private intermediate outputs keep the ordinary stack and comparer.
 
 ## Integration boundary
 

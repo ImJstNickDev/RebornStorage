@@ -66,7 +66,9 @@ three wireless screens and both crafter pages. Screenshots were visually
 inspected. Release classes are Java 8 (major 52), all JSON resources parse, and
 neither test source set is present in the release JAR. The reobfuscated release
 JAR also starts successfully on a separately installed Forge 36.2.26 dedicated
-server with the production dependency JARs, followed by a clean shutdown.
+server with the production dependency JARs, followed by a clean shutdown. Its
+saved NBT confirms that the pending 4,000-plank order completes exactly, with no
+remaining task (120 planks were already present before startup).
 
 Server suite (`src/integrationTest`, excluded from the release JAR):
 
@@ -116,8 +118,9 @@ Client GUI testing uses an integrated server, while the separate dedicated-serve
 suite uses simulated players. A full multiplayer session, forced chunk
 unload/reload and long-running production workloads remain manual validation.
 Short dedicated-server throughput tests, including nested crafting and large
-structures, are documented in [the benchmark report](benchmarks/2026-11-18/README.md);
-they exposed expensive connection invalidations in this first port.
+structures, are documented in the [0.1.0 baseline](benchmarks/2026-11-18/README.md)
+and [0.1.1 comparison](benchmarks/2026-11-18-aggregate/README.md). The latter measures
+the four optimizations against identical workloads and controller capacities.
 Curios equipment/keybinding interaction was not exercised by
 the automated screen suite. There is no supported save migration from other
 Minecraft versions or upstream Reborn disk IDs. RS's numeric and performance

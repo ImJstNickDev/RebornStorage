@@ -67,11 +67,11 @@ The server suite runs twice, including a real save/restart. The client suite use
 
 ## Performance measurements
 
-The [2026-11-18 benchmark report](docs/benchmarks/2026-11-18/README.md) measures solid 4³, 8³, 16³ and 32³ structures at idle and during continuous simple and nested crafting. It includes raw results, tick timings, memory, startup costs and the [diagnosis and proposed remedies](docs/benchmarks/2026-11-18/ANALYSIS.md). The 64³ run was cancelled before launch. These are isolated dedicated-server tests, not a full Cuboid Outpost world.
+The [0.1.0 baseline](docs/benchmarks/2026-11-18/README.md) and [0.1.1 comparison](docs/benchmarks/2026-11-18-aggregate/README.md) measure solid 4³, 8³, 16³ and 32³ structures at idle and during continuous simple and nested crafting. They include raw results, tick timings, memory, startup costs and the [diagnosis and proposed remedies](docs/benchmarks/2026-11-18/ANALYSIS.md). The 64³ run was cancelled before launch. These are isolated dedicated-server tests, not a full Cuboid Outpost world.
 
 ```sh
 python3 scripts/benchmark_port.py --sizes 4 8 16 --tag local-benchmark
 python3 scripts/benchmark_port.py --sizes 32 --controller-capacity 2000000 --tag local-benchmark-32
 ```
 
-RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The original report describes version 0.1.0; repeat the benchmarks when comparing versions. Benchmark sources are excluded from the release JAR.
+RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The comparison uses matching workloads and controller capacities for both versions; the full modpack has not been benchmarked. Benchmark sources are excluded from the release JAR.

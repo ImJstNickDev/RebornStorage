@@ -1,0 +1,18 @@
+{
+  "sizes": [
+    32
+  ],
+  "ticks": 240,
+  "repeats": 3,
+  "heap": "6G",
+  "controller_capacity_override": 2000000,
+  "source_commit": "264b5e46eac832eb98ffdfab8f372d78dc9dfbaa",
+  "date": "2026-11-18T08:14:37.391260+01:00",
+  "cpu": "Intel(R) Core(TM) Ultra 9 275HX",
+  "logical_cpus": 24,
+  "initial_load": [
+    2.0029296875,
+    2.32373046875,
+    2.890625
+  ]
+}

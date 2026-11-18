@@ -1,0 +1,63 @@
+{
+  "verified_at": "2026-11-18T08:18:33.365107+01:00",
+  "source_commit": "264b5e4",
+  "implementation_commit": "b1b8221",
+  "artifact": {
+    "path": "build/libs/rebornstorage-1.16.5-0.1.1.jar",
+    "sha256": "f336e6839998521af0f30b4299e51caf76d6c0acec2fa22dbb1bb21a2ebac583",
+    "class_count": 57,
+    "class_major_version": 52,
+    "valid_json_resources": 95,
+    "test_classes_packaged": false
+  },
+  "server_suite": {
+    "consecutive_starts": 2,
+    "checks_each": 123,
+    "in_flight_restart_exact_output": 4000
+  },
+  "client_suite": {
+    "status": "pass",
+    "wireless_screens": 3,
+    "crafter_pages": 2,
+    "page_screenshots_visually_inspected": true
+  },
+  "production_jar_smoke": {
+    "status": "pass",
+    "forge": "36.2.26",
+    "java": "8",
+    "exit_code": 0,
+    "before_saved_oak_planks": 120,
+    "before_pending_tasks": 1,
+    "after_saved_oak_planks": 4000,
+    "after_pending_tasks": 0,
+    "state_verified_from_saved_nbt": true,
+    "chunk_0_0_force_loaded": true,
+    "note": "RS update-check URL returned FileNotFoundException; no node/task deserialization errors. Server completed startup, saved and stopped cleanly."
+  },
+  "benchmark": {
+    "sizes": [
+      4,
+      8,
+      16,
+      32
+    ],
+    "active_windows": 24,
+    "ticks_per_window": 240,
+    "all_cases_exit_zero": true,
+    "all_active_windows_positive_output": true,
+    "size_64_launched": false
+  },
+  "limits": [
+    "Full Cuboid Outpost modpack not tested",
+    "Real whole-chunk eviction during crafting not tested; unload callback and reattachment covered",
+    "One request at a time, five patterns, three consecutive windows per workload, one JVM per size",
+    "No 64-cubed benchmark"
+  ],
+  "local_log_sha256": {
+    ".local-investigation/aggregate-final-build.log": "50c47ff36064eeb6a62d359073741b7fa3104a93070ecb7a466cea9952baf133",
+    "run/integration/test-1.log": "0fe180bce6e99fa80c6991c6230ade6d9e2b7722f19f6d63ca39f3757ebefcfe",
+    "run/integration/test-2.log": "adc6e2634e178eaac2a82e546232cb20fc11b50489c0505c6186abb267575172",
+    ".local-investigation/aggregate-client-tests.log": "0c398247e4df5b092795d6b2a89d5ff4a201cae1e0a847d7ccd7bc8317a9df24",
+    ".local-investigation/production-optimized.log": "776d9e963ed51e530638a88a05c4013fb64f61513b7a5a844785faf1c16e5ff9"
+  }
+}

@@ -2,7 +2,7 @@
 
 ## Baseline and scope
 
-Implemented backport, version `1.16.5-0.1.0`, branch `port/forge-1.16.5`.
+Implemented backport, version `1.16.5-0.1.1`, branch `port/forge-1.16.5`.
 Upstream baseline: `TechReborn/RebornStorage`, branch `1.18.2`, commit
 `fcbd0496e360ba370d1115910f6e6dd61d19ab52`. This is an unofficial fork.
 
@@ -23,16 +23,28 @@ construction, dependencies and recipes.
 - Server registration is separated from client screens/keybindings.
 - The RS node factory reads the full node state. Node inventories suppress dirty
   notifications while deserializing, avoiding recursive SavedData loading.
-  RS ownership/configuration are saved through the base network node.
+  Storage ownership/configuration and provider UUIDs are saved through the storage node.
+  Empty structural records from 0.1.0 are removed as their tiles load.
+- A transient aggregate provider represents the entire assembled multiblock in the RS graph.
+  Surface ports preserve connections from any side. Persistent storage nodes perform no polling and are never graph entries.
+  They retain an inert crafting-container adapter because RS 1.9.17 deserializes
+  in-flight tasks by looking up the saved node at the pattern container position. A cached composite inventory exposes
+  their pages to RS; the player GUI still binds only its selected 78-slot page.
 - Pattern inventories remain in RS's node saved data; each storage tile persists
   its page ordering. Page ownership is per container/viewer. GUI packets require
   an existing matching menu, interaction distance and RS MODIFY permission.
+- Pattern/provider/graph changes are deduplicated by identity and processed at server tick END.
+  Pending pattern changes suspend crafting until their new cache is ready. Structural changes
+  immediately disable stale containers, and queued graph work avoids recursive rebuilds.
+  CPU counts, costs and topology are cached until structure/configuration changes. Static
+  multiblocks no longer mark chunks dirty every tick.
 - Disassembly/chunk pause invalidate the crafting pattern cache. Block breaking
   drops stored patterns on the server and removes the RS node. Four block loot
   tables return the structural blocks themselves.
 - CPU policy deliberately follows newer Reborn versions: interval
   `max(5-cpus,1)`, successful-update budget `max(cpus,1)`. The old 1.18.2
-  `cpus/5` policy was not retained. No large-crafter throughput claim is made.
+  `cpus/5` policy was not retained. RS applies this budget per recipe node/container,
+  not as a shared time budget; aggregation avoids multiplying it for duplicate storage providers.
 - The normal RS wireless transmitter remains the integration point for both
   RSInfinityBooster cards. Every mode uses INetworkItemProvider, energy checks
   and RS permissions; a stopped network is rejected even on the booster path.
@@ -48,7 +60,8 @@ construction, dependencies and recipes.
 ## Automated verification
 
 Verified on 2026-11-18: build/reobfuscation succeeds; the server suite passes
-**94 checks on each of two consecutive starts**; the client suite passes all
+**123 checks on each of two consecutive starts**, including an in-flight
+crafting task saved and resumed across the real restart; the client suite passes all
 three wireless screens and both crafter pages. Screenshots were visually
 inspected. Release classes are Java 8 (major 52), all JSON resources parse, and
 neither test source set is present in the release JAR. The reobfuscated release
@@ -65,6 +78,14 @@ Server suite (`src/integrationTest`, excluded from the release JAR):
   RS connection, break/reassembly and pattern preservation.
 - Full node NBT round trip, including owner; pattern and disk UUID persistence
   through a real server shutdown/restart.
+- One aggregate graph provider, two persistent storage inventories, opposite-surface
+  traversal, automatic pattern edits, nested crafting across pages, no output while
+  disassembled, and task resumption after reconstruction and network shutdown.
+- Rejection of a conflicting second network, inventory preservation, configuration
+  cost refresh, provider replacement at the same graph position, legacy task deserialization from a non-anchor storage position,
+  and exactly 4,000 outputs from a task interrupted by an actual server restart.
+- Immediate invalidation through the chunk-unload callback and part reattachment;
+  this callback test does not simulate a complete chunk being evicted from memory.
 - Independent concurrent viewer pages, distance validation and denied RS MODIFY
   permission; denial also checked for all three wireless modes.
 - Infinity Card at coordinates 100000/100000 in the Overworld and Dimension Card
@@ -92,7 +113,7 @@ and screenshots stay in `run/client/`.
 
 The targeted dependency set is tested; the full Cuboid Outpost pack is not.
 Client GUI testing uses an integrated server, while the separate dedicated-server
-suite uses simulated players. A remote human multiplayer session, forced chunk
+suite uses simulated players. A full multiplayer session, forced chunk
 unload/reload and long-running production workloads remain manual validation.
 Short dedicated-server throughput tests, including nested crafting and large
 structures, are documented in [the benchmark report](benchmarks/2026-11-18/README.md);

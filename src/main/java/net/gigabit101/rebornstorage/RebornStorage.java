@@ -9,7 +9,7 @@ import net.gigabit101.rebornstorage.init.ModBlocks;
 import net.gigabit101.rebornstorage.init.ModContainers;
 import net.gigabit101.rebornstorage.init.ModItems;
 import net.gigabit101.rebornstorage.multiblocks.MultiBlockCrafter;
-import net.gigabit101.rebornstorage.nodes.CraftingNode;
+import net.gigabit101.rebornstorage.nodes.PatternStorageNode;
 import net.gigabit101.rebornstorage.packet.PacketHandler;
 import net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter;
 import net.minecraft.util.math.BlockPos;
@@ -64,7 +64,7 @@ public class RebornStorage
         API.instance().getStorageDiskRegistry().add(net.gigabit101.rebornstorage.storage.RebornItemDiskFactory.ID, net.gigabit101.rebornstorage.storage.RebornItemDiskFactory.INSTANCE);
         API.instance().getNetworkNodeRegistry().add(Constants.MULTI_BLOCK_ID, (tag, world, pos) ->
         {
-            CraftingNode node = new CraftingNode(world, pos);
+            PatternStorageNode node = new PatternStorageNode(world, pos);
             node.read(tag);
             return node;
         });

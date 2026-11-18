@@ -232,6 +232,14 @@ public class PortBenchmark {
                 != null) {
           result.put("network_connection_ms", (System.nanoTime() - phaseStarted) / 1e6);
           result.put("network_nodes", network.getNodeGraph().all().size());
+          result.put(
+              "persistent_rs_nodes", API.instance().getNetworkNodeManager(world).all().size());
+          result.put(
+              "crafter_providers",
+              network.getNodeGraph().all().stream()
+                  .filter(
+                      e -> e.getNode() instanceof net.gigabit101.rebornstorage.nodes.CraftingNode)
+                  .count());
           result.put("configured_fe_per_tick", network.getEnergyUsage());
           phase("idle_warmup");
         } else if (phaseTicks > 400) throw new IllegalStateException("Network never connected");
@@ -455,7 +463,7 @@ public class PortBenchmark {
     for (int i = 0; i < inputs.length; i++)
       if (inputs[i] != null) PatternItem.setInputSlot(p, i, new ItemStack(inputs[i]));
     PatternItem.setOutputSlot(p, 0, new ItemStack(result, count));
-    tile.getNode().patterns.setStackInSlot(slot, p);
+    tile.getStorageNode().patterns.setStackInSlot(slot, p);
   }
 
   static void installPatterns(BlockEntityMultiCrafter tile) {

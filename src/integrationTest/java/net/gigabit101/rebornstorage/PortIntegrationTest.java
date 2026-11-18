@@ -33,7 +33,24 @@ public class PortIntegrationTest {
   private static MinecraftServer server;
   private static int tick;
   private static int checks;
+  private static boolean restoringTask;
+  private static int restoreTicks;
+  private static com.refinedmods.refinedstorage.api.network.INetwork scenarioNetwork;
+  private static int pausedOutput;
+  private static BlockEntityMultiCrafter pausedPart;
+  private static ItemStack secondPattern;
+  private static final BlockPos SECOND_STORAGE = new BlockPos(3, 81, 2);
   private static final BlockPos STORAGE = new BlockPos(3, 81, 1);
+
+  private static void placeAsPlayer(ServerWorld world, BlockPos pos, String id) {
+    net.minecraftforge.common.util.BlockSnapshot snapshot =
+        net.minecraftforge.common.util.BlockSnapshot.create(world.dimension(), world, pos);
+    world.setBlockAndUpdate(
+        pos, ForgeRegistries.BLOCKS.getValue(new ResourceLocation(id)).defaultBlockState());
+    net.minecraftforge.common.MinecraftForge.EVENT_BUS.post(
+        new net.minecraftforge.event.world.BlockEvent.EntityPlaceEvent(
+            snapshot, world.getBlockState(pos.below()), player(world)));
+  }
 
   private static void check(boolean ok, String description) {
     if (!ok) throw new AssertionError(description);
@@ -44,21 +61,45 @@ public class PortIntegrationTest {
   @SubscribeEvent
   public static void started(FMLServerStartedEvent event) {
     server = event.getServer();
+    restoringTask = Files.exists(Paths.get("pending-craft-marker.txt"));
   }
 
   @SubscribeEvent
   public static void tick(TickEvent.ServerTickEvent event) {
     if (server == null || event.phase != TickEvent.Phase.END) return;
     try {
-      tick++;
       ServerWorld world = server.overworld();
+      if (restoringTask) {
+        restoreTicks++;
+        if (restoreTicks == 1) world.getChunk(STORAGE);
+        if (restoreTicks < 240) return;
+        BlockEntityMultiCrafter restoredTile =
+            (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
+        com.refinedmods.refinedstorage.api.network.INetwork restoredNetwork =
+            restoredTile.getNode().getNetwork();
+        check(
+            restoredNetwork != null
+                && restoredNetwork
+                        .extractItem(
+                            new ItemStack(Items.OAK_PLANKS), Integer.MAX_VALUE, Action.PERFORM)
+                        .getCount()
+                    == 4000,
+            "in-flight crafting task survives actual server restart with exactly 4000 output");
+        check(
+            restoredNetwork.getCraftingManager().getTasks().isEmpty(),
+            "restored crafting task completes");
+        Files.delete(Paths.get("pending-craft-marker.txt"));
+        restoringTask = false;
+        return;
+      }
+      tick++;
       if (tick == 1) {
         if (Files.exists(Paths.get("restart-marker.txt"))) {
           BlockEntityMultiCrafter restored =
               (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
           check(
               restored != null
-                  && restored.getNode().patterns.getStackInSlot(0).getItem()
+                  && restored.getStorageNode().patterns.getStackInSlot(0).getItem()
                       == com.refinedmods.refinedstorage.RSItems.PATTERN.get(),
               "pattern survives actual server restart");
           com.refinedmods.refinedstorage.tile.DiskDriveTile drive =
@@ -159,16 +200,22 @@ public class PortIntegrationTest {
         wireless(world, tile.getNode().getNetwork());
         viewersAndSecurity(world, tile);
         UUID owner = UUID.randomUUID();
-        tile.getNode().setOwner(owner);
-        tile.getNode().patterns.setStackInSlot(0, new ItemStack(Items.DIAMOND));
-        CompoundNBT saved = tile.getNode().write(new CompoundNBT());
-        net.gigabit101.rebornstorage.nodes.CraftingNode restored =
-            new net.gigabit101.rebornstorage.nodes.CraftingNode(world, STORAGE);
+        tile.getStorageNode().setOwner(owner);
+        check(
+            owner.equals(tile.getNode().getOwner()),
+            "aggregate owner delegates to persistent storage");
+        tile.getStorageNode().patterns.setStackInSlot(0, new ItemStack(Items.DIAMOND));
+        CompoundNBT saved = tile.getStorageNode().write(new CompoundNBT());
+        net.gigabit101.rebornstorage.nodes.PatternStorageNode restored =
+            new net.gigabit101.rebornstorage.nodes.PatternStorageNode(world, STORAGE);
         restored.read(saved);
         check(
             restored.patterns.getStackInSlot(0).getItem() == Items.DIAMOND,
             "node inventory NBT round trip");
         check(owner.equals(restored.getOwner()), "node owner NBT round trip");
+        check(
+            restored.getProviderId().equals(tile.getStorageNode().getProviderId()),
+            "aggregate UUID persists in storage NBT");
         world.setBlockAndUpdate(new BlockPos(2, 80, 0), Blocks.AIR.defaultBlockState());
       }
       if (tick == 80) {
@@ -183,7 +230,7 @@ public class PortIntegrationTest {
         BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
         check(tile.getMultiBlock().isAssembled(), "crafter reassembles");
         check(
-            tile.getNode().patterns.getStackInSlot(0).getItem() == Items.DIAMOND,
+            tile.getStorageNode().patterns.getStackInSlot(0).getItem() == Items.DIAMOND,
             "frame break preserves patterns");
         ItemStack pattern = new ItemStack(com.refinedmods.refinedstorage.RSItems.PATTERN.get());
         com.refinedmods.refinedstorage.item.PatternItem.setToCurrentVersion(pattern);
@@ -191,9 +238,18 @@ public class PortIntegrationTest {
             pattern, 0, new ItemStack(Items.OAK_LOG));
         com.refinedmods.refinedstorage.item.PatternItem.setOutputSlot(
             pattern, 0, new ItemStack(Items.OAK_PLANKS, 4));
-        tile.getNode().patterns.setStackInSlot(0, pattern);
+        tile.getStorageNode().patterns.setStackInSlot(0, pattern);
         tile.getNode().rebuildPatterns("integration test");
         check(tile.getNode().getPatterns().size() == 1, "encoded crafting pattern recognized");
+        CompoundNBT legacyPattern =
+            com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.SerializationUtil
+                .writePatternToNbt(tile.getNode().getPatterns().get(0));
+        legacyPattern.putLong("ContainerPos", SECOND_STORAGE.asLong());
+        check(
+            com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.SerializationUtil
+                .readPatternFromNbt(legacyPattern, world)
+                .equals(tile.getNode().getPatterns().get(0)),
+            "legacy task pattern resolves from a non-anchor storage position");
         check(
             tile.getNode()
                 .getNetwork()
@@ -230,6 +286,231 @@ public class PortIntegrationTest {
                     .getItem()
                 == net.gigabit101.rebornstorage.init.ModItems.DISK_262144K.get(),
             "Disk Manipulator returns original tier");
+        scenarioNetwork = network;
+        check(
+            network.getNodeGraph().all().stream()
+                    .filter(
+                        e -> e.getNode() instanceof net.gigabit101.rebornstorage.nodes.CraftingNode)
+                    .count()
+                == 1,
+            "one aggregate graph provider for the entire multiblock");
+        check(
+            API.instance().getNetworkNodeManager(world).all().stream()
+                    .filter(n -> n instanceof net.gigabit101.rebornstorage.nodes.PatternStorageNode)
+                    .count()
+                == 2,
+            "only the two storage inventories persist as RS nodes");
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                    .getNode()
+                    .getPatternInventory()
+                    .getSlots()
+                == 156,
+            "aggregate exposes both inventory pages");
+        secondPattern = new ItemStack(com.refinedmods.refinedstorage.RSItems.PATTERN.get());
+        com.refinedmods.refinedstorage.item.PatternItem.setToCurrentVersion(secondPattern);
+        com.refinedmods.refinedstorage.item.PatternItem.setInputSlot(
+            secondPattern, 0, new ItemStack(Items.OAK_PLANKS));
+        com.refinedmods.refinedstorage.item.PatternItem.setInputSlot(
+            secondPattern, 3, new ItemStack(Items.OAK_PLANKS));
+        com.refinedmods.refinedstorage.item.PatternItem.setOutputSlot(
+            secondPattern, 0, new ItemStack(Items.STICK, 4));
+        ((BlockEntityMultiCrafter) world.getBlockEntity(SECOND_STORAGE))
+            .getStorageNode()
+            .patterns
+            .setStackInSlot(0, secondPattern);
+        network.insertItem(new ItemStack(Items.OAK_LOG), 4, Action.PERFORM);
+        placeAsPlayer(world, new BlockPos(6, 80, 0), "refinedstorage:disk_drive");
+      }
+      if (tick == 230) {
+        check(
+            ((com.refinedmods.refinedstorage.tile.DiskDriveTile)
+                        world.getBlockEntity(new BlockPos(6, 80, 0)))
+                    .getNode()
+                    .getNetwork()
+                == scenarioNetwork,
+            "network traverses aggregate to the opposite surface");
+        check(
+            scenarioNetwork.getCraftingManager().request(null, new ItemStack(Items.STICK), 32)
+                != null,
+            "second storage page pattern is discovered automatically");
+      }
+      if (tick == 260) {
+        check(
+            scenarioNetwork.extractItem(new ItemStack(Items.STICK), 32, Action.PERFORM).getCount()
+                == 32,
+            "nested craft spans two storage pages");
+        ((BlockEntityMultiCrafter) world.getBlockEntity(SECOND_STORAGE))
+            .getStorageNode()
+            .patterns
+            .setStackInSlot(0, ItemStack.EMPTY);
+        scenarioNetwork.insertItem(new ItemStack(Items.OAK_LOG), 150, Action.PERFORM);
+        check(
+            scenarioNetwork.getCraftingManager().request(null, new ItemStack(Items.OAK_PLANKS), 600)
+                != null,
+            "craft before structural break starts");
+      }
+      if (tick == 263) {
+        check(
+            scenarioNetwork.getCraftingManager().getPattern(new ItemStack(Items.STICK)) == null,
+            "removed pattern disappears without periodic polling");
+        world.setBlockAndUpdate(new BlockPos(2, 80, 0), Blocks.AIR.defaultBlockState());
+        pausedOutput =
+            scenarioNetwork
+                .extractItem(new ItemStack(Items.OAK_PLANKS), 1000, Action.SIMULATE)
+                .getCount();
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                    .getNode()
+                    .getMaximumSuccessfulCraftingUpdates()
+                == 0,
+            "break immediately disables stale task container");
+      }
+      if (tick == 285) {
+        check(
+            scenarioNetwork
+                    .extractItem(new ItemStack(Items.OAK_PLANKS), 1000, Action.SIMULATE)
+                    .getCount()
+                == pausedOutput,
+            "disassembled crafter produces no further output");
+        world.setBlockAndUpdate(
+            new BlockPos(2, 80, 0), ModBlocks.BLOCK_MULTI_FRAME.get().defaultBlockState());
+      }
+      if (tick == 330) {
+        check(
+            scenarioNetwork
+                    .extractItem(new ItemStack(Items.OAK_PLANKS), 1000, Action.PERFORM)
+                    .getCount()
+                == 600,
+            "pending task resumes after reconstruction without lost or duplicate output");
+        ((com.refinedmods.refinedstorage.apiimpl.network.Network) scenarioNetwork)
+            .setRedstoneMode(com.refinedmods.refinedstorage.tile.config.RedstoneMode.HIGH);
+        scenarioNetwork.insertItem(new ItemStack(Items.OAK_LOG), 10, Action.PERFORM);
+      }
+      if (tick == 360) {
+        check(!scenarioNetwork.canRun(), "controller disabled by redstone");
+        check(
+            scenarioNetwork.getCraftingManager().request(null, new ItemStack(Items.OAK_PLANKS), 40)
+                != null,
+            "task can wait on disabled network");
+      }
+      if (tick == 380) {
+        check(
+            scenarioNetwork
+                .extractItem(new ItemStack(Items.OAK_PLANKS), 100, Action.SIMULATE)
+                .isEmpty(),
+            "disabled network does not craft");
+        ((com.refinedmods.refinedstorage.apiimpl.network.Network) scenarioNetwork)
+            .setRedstoneMode(com.refinedmods.refinedstorage.tile.config.RedstoneMode.IGNORE);
+      }
+      if (tick == 430) {
+        check(
+            scenarioNetwork
+                    .extractItem(new ItemStack(Items.OAK_PLANKS), 100, Action.PERFORM)
+                    .getCount()
+                == 40,
+            "network restart resumes pending craft");
+        pausedPart = (BlockEntityMultiCrafter) world.getBlockEntity(new BlockPos(5, 83, 3));
+        net.gigabit101.rebornstorage.nodes.CraftingNode oldProvider =
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode();
+        pausedPart.onChunkUnloaded();
+        check(
+            oldProvider.getMaximumSuccessfulCraftingUpdates() == 0,
+            "chunk-unload callback immediately disables stale provider");
+      }
+      if (tick == 440) {
+        pausedPart.onLoad();
+      }
+      if (tick == 460) {
+        BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
+        net.gigabit101.rebornstorage.multiblocks.MultiBlockCrafter multiblock =
+            tile.getMultiBlock();
+        net.gigabit101.rebornstorage.nodes.CraftingNode previous = tile.getNode();
+        previous.invalidate();
+        net.gigabit101.rebornstorage.nodes.CraftingNode replacement =
+            new net.gigabit101.rebornstorage.nodes.CraftingNode(
+                world, previous.getPos(), multiblock, previous.getUuid());
+        replacement.configure(
+            6,
+            50,
+            java.util.Arrays.asList(
+                tile.getStorageNode(),
+                ((BlockEntityMultiCrafter) world.getBlockEntity(SECOND_STORAGE)).getStorageNode()));
+        java.lang.reflect.Field providerField =
+            net.gigabit101.rebornstorage.multiblocks.MultiBlockCrafter.class.getDeclaredField(
+                "node");
+        providerField.setAccessible(true);
+        providerField.set(multiblock, replacement);
+      }
+      if (tick == 470) {
+        check(
+            scenarioNetwork.getCraftingManager().getPattern(new ItemStack(Items.OAK_PLANKS))
+                != null,
+            "part reload restores aggregate patterns");
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getNetwork()
+                == scenarioNetwork,
+            "recreated provider at the same anchor receives its network connection");
+        RebornStorageConfig.CPU_COST.set(7);
+      }
+      if (tick == 475) {
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getEnergyUsage()
+                == 62,
+            "cached energy follows configuration changes");
+        RebornStorageConfig.CPU_COST.set(5);
+        world.setBlockAndUpdate(new BlockPos(6, 80, 0), Blocks.AIR.defaultBlockState());
+        placeAsPlayer(world, new BlockPos(6, 80, 0), "refinedstorage:creative_controller");
+      }
+      if (tick == 510) {
+        check(
+            world.getBlockState(new BlockPos(6, 80, 0)).isAir()
+                || !((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                    .getMultiBlock()
+                    .isAssembled(),
+            "conflicting second network is rejected instead of sharing a provider");
+        world.setBlockAndUpdate(new BlockPos(6, 80, 0), Blocks.AIR.defaultBlockState());
+        for (int x = 2; x <= 5; x++)
+          for (int y = 80; y <= 83; y++)
+            for (int z = 0; z <= 3; z++) {
+              if (world.getBlockState(new BlockPos(x, y, z)).isAir()) {
+                int edges =
+                    (x == 2 || x == 5 ? 1 : 0)
+                        + (y == 80 || y == 83 ? 1 : 0)
+                        + (z == 0 || z == 3 ? 1 : 0);
+                world.setBlockAndUpdate(
+                    new BlockPos(x, y, z),
+                    (edges >= 2
+                            ? ModBlocks.BLOCK_MULTI_FRAME.get()
+                            : ModBlocks.BLOCK_MULTI_HEAT.get())
+                        .defaultBlockState());
+              }
+            }
+      }
+      if (tick == 550) {
+        BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
+        check(
+            tile.getMultiBlock().isAssembled() && tile.getNode().getNetwork() == scenarioNetwork,
+            "aggregate reconnects to original network after conflict repair");
+        check(
+            tile.getStorageNode().patterns.getStackInSlot(0).getItem()
+                == com.refinedmods.refinedstorage.RSItems.PATTERN.get(),
+            "network conflict preserves storage inventory");
+        scenarioNetwork.extractItem(
+            new ItemStack(Items.OAK_PLANKS), Integer.MAX_VALUE, Action.PERFORM);
+        scenarioNetwork.insertItem(new ItemStack(Items.OAK_LOG), 1000, Action.PERFORM);
+        check(
+            scenarioNetwork
+                    .getCraftingManager()
+                    .request(null, new ItemStack(Items.OAK_PLANKS), 4000)
+                != null,
+            "start long craft for restart persistence test");
+      }
+      if (tick == 555) {
+        check(
+            !scenarioNetwork.getCraftingManager().getTasks().isEmpty(),
+            "save while crafting task is still in flight");
+        Files.write(Paths.get("pending-craft-marker.txt"), new byte[] {1});
         Files.write(
             Paths.get("port-test-result.txt"),
             ("PASS: " + checks + " checks\n").getBytes(java.nio.charset.StandardCharsets.UTF_8));

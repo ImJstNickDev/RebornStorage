@@ -48,6 +48,6 @@ for iteration in range(1 if args.client else 2):
     if code or not result.exists() or not result.read_text().startswith("PASS:"):
         raise SystemExit(f"Test failed (exit={code}). See {log}")
     text = log.read_text()
-    if "Could not read network node" in text or "PORT TEST FAILED" in text or "PORT CLIENT FAILED" in text:
+    if any(error in text for error in ("Could not read network node", "Could not deserialize crafting task", "PORT TEST FAILED", "PORT CLIENT FAILED")):
         raise SystemExit(f"Runtime failure. See {log}")
     print(f"Run {iteration + 1}: {result.read_text().strip()} ({log})", flush=True)

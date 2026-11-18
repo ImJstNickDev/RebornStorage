@@ -134,11 +134,11 @@ final class ExperimentalCraftingTest {
         "only fixed plain intermediate recipes skip remainder evaluation");
     if (output == Items.OAK_PLANKS && !variants && !tagged) {
       externalStorage(network, original.writeToNbt());
-      reentrantInputs(network, original.writeToNbt(), false);
+      reentrantInputs(network, original.getPattern(), false);
       CapabilityProbe caps = new CapabilityProbe();
       net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(caps);
       try {
-        reentrantInputs(network, original.writeToNbt(), true);
+        reentrantInputs(network, original.getPattern(), true);
       } finally {
         net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(caps);
       }
@@ -248,14 +248,20 @@ final class ExperimentalCraftingTest {
 
   // One server-side listener invalidates an input after the first committed craft.
   // The next iteration must see the replacement or capability change synchronously.
-  private static void reentrantInputs(INetwork network, CompoundNBT seed, boolean capability)
-      throws Exception {
+  private static void reentrantInputs(
+      INetwork network, ICraftingPattern indexedPattern, boolean capability) throws Exception {
     for (boolean fast : new boolean[] {false, true}) {
+      ItemStack input = new ItemStack(Items.OAK_LOG);
+      NonNullList<ItemStack> inputs = NonNullList.withSize(9, ItemStack.EMPTY);
+      inputs.set(0, input);
+      CraftingNode reference = new CraftingNode(indexedPattern, false, inputs);
+      reference.addQuantity(19);
+      reference.getRequirements().addItemRequirement(0, input, 19, 1);
+      reference.onCalculationFinished();
       CraftingNode node =
-          fast ? new ExperimentalCraftingNode(network, seed) : new CraftingNode(network, seed);
+          fast ? new ExperimentalCraftingNode(indexedPattern, reference.writeToNbt()) : reference;
       ItemStorageDisk disk =
           fast ? TaskStorageFixture.empty() : new ItemStorageDisk(null, -1, null);
-      ItemStack input = new ItemStack(Items.OAK_LOG);
       disk.insert(input, 19, Action.PERFORM);
       CountingListener listener =
           new CountingListener() {
@@ -280,7 +286,16 @@ final class ExperimentalCraftingTest {
       node.update(network, 1, new NodeList(), disk, new FluidStorageDisk(null, -1, null), listener);
       check(
           listener.singles == 1 && node.getQuantity() == 18 && disk.getStored() == 22,
-          "listener mutation stalls next craft; caps=" + capability + ", optimized=" + fast);
+          "listener mutation stalls next craft; caps="
+              + capability
+              + ", optimized="
+              + fast
+              + ", callbacks="
+              + listener.singles
+              + ", remaining="
+              + node.getQuantity()
+              + ", stored="
+              + disk.getStored());
     }
     CapabilityProbe.data.clear();
   }

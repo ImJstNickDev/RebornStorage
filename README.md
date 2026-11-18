@@ -1,5 +1,10 @@
 # Reborn Storage — Forge 1.16.5 backport
 
+This branch contains the [opt-in crafting engine experiment](docs/EXPERIMENT-CRAFTING-ENGINE.md),
+version `1.16.5-0.1.3-experimental.1`. It has not been approved for merge.
+The stable 0.1.2 implementation remains on `port/forge-1.16.5`; the notes below
+describe that baseline unless the experiment is explicitly enabled.
+
 Unofficial, focused backport of [TechReborn/RebornStorage](https://github.com/TechReborn/RebornStorage), based on its `1.18.2` branch. Targeted at Cuboid Outpost LE 1.1.2. Upstream authorship and MIT license are preserved.
 
 ## Included

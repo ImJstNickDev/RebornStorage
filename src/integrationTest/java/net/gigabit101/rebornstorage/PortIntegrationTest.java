@@ -96,6 +96,10 @@ public class PortIntegrationTest {
       }
       tick++;
       if (tick == 1) {
+        // The fixture is at the origin; a fresh world's spawn may be elsewhere.
+        // Keep both chunks containing its controller/security manager ticking without players.
+        world.setChunkForced(0, 0, true);
+        world.setChunkForced(0, -1, true);
         if (Files.exists(Paths.get("restart-marker.txt"))) {
           BlockEntityMultiCrafter restored =
               (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
@@ -567,6 +571,9 @@ public class PortIntegrationTest {
       }
       if (tick == 550) {
         BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
+        if (net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+            != net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.OFF)
+          ExperimentalCraftingTest.run(tile, scenarioNetwork);
         check(
             tile.getMultiBlock().isAssembled() && tile.getNode().getNetwork() == scenarioNetwork,
             "aggregate reconnects to original network after conflict repair");
@@ -585,6 +592,13 @@ public class PortIntegrationTest {
             "start long craft for restart persistence test");
       }
       if (tick == 555) {
+        if (net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+            == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK)
+          check(
+              scenarioNetwork.getCraftingManager().getTasks().stream()
+                  .allMatch(
+                      t -> t instanceof net.gigabit101.rebornstorage.crafting.ExperimentalTask),
+              "experimental factory selected for saved pending order");
         check(
             !scenarioNetwork.getCraftingManager().getTasks().isEmpty(),
             "save while crafting task is still in flight");
@@ -717,6 +731,18 @@ public class PortIntegrationTest {
         network
             .getNetworkItemManager()
             .open(player, stack, new com.refinedmods.refinedstorage.inventory.player.PlayerSlot(0));
+        if (network.getNetworkItemManager().getItem(player) == null)
+          RebornStorage.logger.error(
+              "WIRELESS TEST DIAGNOSTIC runnable={} active={} range={} permission={} energy={}",
+              network.canRun(),
+              transmitter.isActive(),
+              transmitter.getRange(),
+              network
+                  .getSecurityManager()
+                  .hasPermission(
+                      com.refinedmods.refinedstorage.api.network.security.Permission.MODIFY,
+                      player),
+              energy.getEnergyStored());
         check(
             network.getNetworkItemManager().getItem(player) != null,
             card + " opens " + mode + " from " + player.level.dimension().location());

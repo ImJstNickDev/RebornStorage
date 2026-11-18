@@ -61,6 +61,7 @@ public class RebornStorage
     public void preInit(FMLCommonSetupEvent event)
     {
         PacketHandler.register();
+        API.instance().getCraftingTaskRegistry().add(net.gigabit101.rebornstorage.crafting.ExperimentalTaskFactory.ID, new net.gigabit101.rebornstorage.crafting.ExperimentalTaskFactory());
         API.instance().getStorageDiskRegistry().add(net.gigabit101.rebornstorage.storage.RebornItemDiskFactory.ID, net.gigabit101.rebornstorage.storage.RebornItemDiskFactory.INSTANCE);
         API.instance().getNetworkNodeRegistry().add(Constants.MULTI_BLOCK_ID, (tag, world, pos) ->
         {

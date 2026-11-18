@@ -117,6 +117,9 @@ public class PortBenchmark {
     world = server.overworld();
     check(CONCURRENT >= 1 && CONCURRENT <= 4, "Diagnostic concurrency must be 1..4");
     result.put("concurrent_orders", CONCURRENT);
+    result.put(
+        "crafting_experiment",
+        net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode().name());
     result.put("count_listeners", COUNT_LISTENERS);
     result.put("monitor_encoding", System.getProperty("bench.monitor", "none"));
     result.put("size", SIZE);
@@ -492,6 +495,19 @@ public class PortBenchmark {
       ICalculationResult calc =
           network.getCraftingManager().create(new ItemStack(outputItem()), qty);
       check(calc.isOk(), "Craft calculation failed " + calc.getType());
+      if (net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+          == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK) {
+        check(
+            calc.getTask() instanceof net.gigabit101.rebornstorage.crafting.ExperimentalTask,
+            "Experimental task was not selected");
+        long optimized =
+            ((net.gigabit101.rebornstorage.crafting.ExperimentalTask) calc.getTask())
+                .getOptimizedNodeCount();
+        check(
+            optimized == (workload == 0 ? 1 : 5),
+            "Expected all benchmark recipe nodes to use optimized requirements");
+        result.put("verified_optimized_nodes_" + (workload == 0 ? "simple" : "nested"), optimized);
+      }
       network.getCraftingManager().start(calc.getTask());
       jobs++;
     }

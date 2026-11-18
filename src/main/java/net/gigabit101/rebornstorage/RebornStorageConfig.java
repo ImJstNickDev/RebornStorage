@@ -18,6 +18,7 @@ public class RebornStorageConfig
     public static ForgeConfigSpec.IntValue HEAT_COST;
     public static ForgeConfigSpec.IntValue CPU_COST;
     public static ForgeConfigSpec.IntValue STORAGE_COST;
+    public static ForgeConfigSpec.EnumValue<net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode> CRAFTING_EXPERIMENT;
 
     public static ForgeConfigSpec.IntValue MULTIBLOCK_MAX_XSIZE;
     public static ForgeConfigSpec.IntValue MULTIBLOCK_MAX_YSIZE;
@@ -33,6 +34,8 @@ public class RebornStorageConfig
     static
     {
         COMMON_BUILDER.comment("General Settings").push(CATEGORY_GENERAL);
+        CRAFTING_EXPERIMENT = COMMON_BUILDER.comment("Experimental branch only. OFF, PATTERN, TASK. Restart required.")
+            .defineEnum("experimental_crafting", net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.OFF);
 
         FRAME_COST = COMMON_BUILDER.comment("Power requirement for Frame blocks").defineInRange("multiblock_crafter_frame_cost", 0, 0, 1000);
         HEAT_COST = COMMON_BUILDER.comment("Power requirement for Heat exchanger blocks").defineInRange("multiblock_crafter_heat_cost", 0, 0, 1000);

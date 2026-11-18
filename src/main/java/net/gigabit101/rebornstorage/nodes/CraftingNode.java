@@ -156,7 +156,7 @@ public final class CraftingNode extends NetworkNode
             dynamicSlots.set(slot);
           ICraftingPattern pattern =
               ((ICraftingPatternProvider) stack.getItem()).create(world, stack, this);
-          if (pattern.isValid()) cachedPatterns.put(slot, pattern);
+          if (pattern.isValid()) cachedPatterns.put(slot, net.gigabit101.rebornstorage.crafting.CraftingExperiment.wrap(pattern));
         }
       }
       patterns.addAll(cachedPatterns.values());

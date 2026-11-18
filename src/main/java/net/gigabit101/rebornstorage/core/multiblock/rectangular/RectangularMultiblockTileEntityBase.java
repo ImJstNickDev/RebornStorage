@@ -3,10 +3,9 @@ package net.gigabit101.rebornstorage.core.multiblock.rectangular;
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockControllerBase;
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockBlockEntityBase;
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockValidationException;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.tileentity.TileEntityType;
 
 public abstract class RectangularMultiblockTileEntityBase extends MultiblockBlockEntityBase
 {
@@ -14,9 +13,9 @@ public abstract class RectangularMultiblockTileEntityBase extends MultiblockBloc
     PartPosition position;
     Direction outwards;
 
-    public RectangularMultiblockTileEntityBase(BlockEntityType<?> tileEntityTypeIn, BlockPos blockPos, BlockState blockState)
+    public RectangularMultiblockTileEntityBase(TileEntityType<?> tileEntityTypeIn)
     {
-        super(tileEntityTypeIn, blockPos, blockState);
+        super(tileEntityTypeIn);
 
         position = PartPosition.Unknown;
         outwards = null;

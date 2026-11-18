@@ -1,11 +1,8 @@
 package net.gigabit101.rebornstorage;
 
-import com.electronwill.nightconfig.core.file.CommentedFileConfig;
-import com.electronwill.nightconfig.core.io.WritingMode;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.common.Mod;
 
-import java.nio.file.Path;
 
 @Mod.EventBusSubscriber
 public class RebornStorageConfig
@@ -30,10 +27,7 @@ public class RebornStorageConfig
     public static ForgeConfigSpec.IntValue MULTIBLOCK_MIN_YSIZE;
     public static ForgeConfigSpec.IntValue MULTIBLOCK_MIN_ZSIZE;
 
-    public static ForgeConfigSpec.IntValue ADVANCED_WIRELESS_TRANSMITTER_RANGE;
-    public static ForgeConfigSpec.IntValue ADVANCED_WIRELESS_TRANSMITTER_POWER_COST;
 
-    public static ForgeConfigSpec.IntValue ADVANCED_WIRELESS_RAGE_BOOSTER_RANGE;
 
 
     static
@@ -57,21 +51,10 @@ public class RebornStorageConfig
         MULTIBLOCK_MIN_YSIZE = COMMON_BUILDER.comment("Maximum Y size").defineInRange("multiblock_crafter_min_y", 3, 3, 64);
         MULTIBLOCK_MIN_ZSIZE = COMMON_BUILDER.comment("Maximum Z size").defineInRange("multiblock_crafter_min_z", 3, 3, 64);
 
-        ADVANCED_WIRELESS_TRANSMITTER_RANGE = COMMON_BUILDER.defineInRange("advanced_wireless_transmitter_range", 1000, 0, Integer.MAX_VALUE);
-        ADVANCED_WIRELESS_TRANSMITTER_POWER_COST = COMMON_BUILDER.defineInRange("advanced_wireless_transmitter_cost", 100, 0, 100000);
 
-        ADVANCED_WIRELESS_RAGE_BOOSTER_RANGE = COMMON_BUILDER.defineInRange("advanced_wireless_transmitter_range_booster_range", 500, 0, 100000);
         COMMON_BUILDER.pop();
 
         COMMON_CONFIG = COMMON_BUILDER.build();
     }
 
-    public static void loadConfig(ForgeConfigSpec spec, Path path)
-    {
-
-        final CommentedFileConfig configData = CommentedFileConfig.builder(path).sync().autosave().writingMode(WritingMode.REPLACE).build();
-
-        configData.load();
-        spec.setConfig(configData);
-    }
 }

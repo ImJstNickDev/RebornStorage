@@ -2,14 +2,14 @@ package net.gigabit101.rebornstorage.core.multiblock.rectangular;
 
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockControllerBase;
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockValidationException;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
 
 public abstract class RectangularMultiblockControllerBase extends MultiblockControllerBase
 {
 
-    protected RectangularMultiblockControllerBase(Level world)
+    protected RectangularMultiblockControllerBase(World world)
     {
         super(world);
     }
@@ -68,7 +68,7 @@ public abstract class RectangularMultiblockControllerBase extends MultiblockCont
 
         // Now we run a simple check on each block within that volume.
         // Any block deviating = NO DEAL SIR
-        BlockEntity te;
+        TileEntity te;
         RectangularMultiblockTileEntityBase part;
         Class<? extends RectangularMultiblockControllerBase> myClass = this.getClass();
 

@@ -1,7 +1,6 @@
 {
   "replace": false,
   "values": [
-    "#refinedstorage:disks/items",
-    "#refinedstorage:disks/fluids"
+    "#refinedstorage:disks/items"
   ]
 }

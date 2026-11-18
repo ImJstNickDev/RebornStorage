@@ -1,12 +1,12 @@
 package net.gigabit101.rebornstorage.core.multiblock;
 
 import net.gigabit101.rebornstorage.RebornStorage;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.block.BlockState;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -25,7 +25,7 @@ public abstract class MultiblockControllerBase
     public static final short DIMENSION_UNBOUNDED = -1;
 
     // Multiblock stuff - do not mess with
-    protected Level worldObj;
+    protected World worldObj;
 
     // Disassembled -> Assembled; Assembled -> Disassembled OR Paused; Paused ->
     // Assembled
@@ -71,7 +71,7 @@ public abstract class MultiblockControllerBase
 
     protected boolean debugMode;
 
-    protected MultiblockControllerBase(Level world)
+    protected MultiblockControllerBase(World world)
     {
         // Multiblock stuff
         worldObj = world;
@@ -107,7 +107,7 @@ public abstract class MultiblockControllerBase
      * @param part Attached part
      * @param data The NBT tag containing this controller's data.
      */
-    public abstract void onAttachedPartWithMultiblockData(IMultiblockPart part, CompoundTag data);
+    public abstract void onAttachedPartWithMultiblockData(IMultiblockPart part, CompoundNBT data);
 
     /**
      * Check if a block is being tracked by this machine.
@@ -141,7 +141,7 @@ public abstract class MultiblockControllerBase
 
         if (part.hasMultiblockSaveData())
         {
-            CompoundTag savedData = part.getMultiblockSaveData();
+            CompoundNBT savedData = part.getMultiblockSaveData();
             onAttachedPartWithMultiblockData(part, savedData);
             part.onMultiblockDataAssimilated();
         }
@@ -152,13 +152,13 @@ public abstract class MultiblockControllerBase
             part.becomeMultiblockSaveDelegate();
         } else if (coord.compareTo(referenceCoord) < 0)
         {
-            BlockEntity te = this.worldObj.getBlockEntity(referenceCoord);
+            TileEntity te = this.worldObj.getBlockEntity(referenceCoord);
             if(te != null)
             {
                 ((IMultiblockPart) te).forfeitMultiblockSaveDelegate();
             } else
             {
-                RebornStorage.logger.error("BlockEntity at " + referenceCoord + " is null");
+                RebornStorage.logger.error("TileEntity at " + referenceCoord + " is null");
             }
 
             referenceCoord = coord;
@@ -520,7 +520,7 @@ public abstract class MultiblockControllerBase
         {
             if (this.worldObj.isLoaded(this.referenceCoord))
             {
-                BlockEntity te = this.worldObj.getBlockEntity(referenceCoord);
+                TileEntity te = this.worldObj.getBlockEntity(referenceCoord);
                 if (te instanceof IMultiblockPart)
                 {
                     ((IMultiblockPart) te).forfeitMultiblockSaveDelegate();
@@ -588,7 +588,7 @@ public abstract class MultiblockControllerBase
                     {
                         // Ensure that we save our data, even if the our save
                         // delegate is in has no TEs.
-                        LevelChunk chunkToSave = this.worldObj.getChunk(x, z);
+                        Chunk chunkToSave = this.worldObj.getChunk(x, z);
                         chunkToSave.setUnsaved(true);
                     }
                 }
@@ -626,7 +626,7 @@ public abstract class MultiblockControllerBase
      * @param z     Z coordinate of the block being tested
      * @throws MultiblockValidationException if the tested block is not allowed on the machine's frame
      */
-    protected void isBlockGoodForFrame(Level world, int x, int y, int z) throws MultiblockValidationException
+    protected void isBlockGoodForFrame(World world, int x, int y, int z) throws MultiblockValidationException
     {
         throw new MultiblockValidationException(String.format("%d, %d, %d - Block is not valid for use in the machine's interior", x, y, z));
     }
@@ -641,7 +641,7 @@ public abstract class MultiblockControllerBase
      * @param z     Z coordinate of the block being tested
      * @throws MultiblockValidationException if the tested block is not allowed on the machine's top face
      */
-    protected void isBlockGoodForTop(Level world, int x, int y, int z) throws MultiblockValidationException
+    protected void isBlockGoodForTop(World world, int x, int y, int z) throws MultiblockValidationException
     {
         throw new MultiblockValidationException(String.format("%d, %d, %d - Block is not valid for use in the machine's interior", x, y, z));
     }
@@ -657,7 +657,7 @@ public abstract class MultiblockControllerBase
      * @throws MultiblockValidationException if the tested block is not allowed on the machine's bottom
      *                                       face
      */
-    protected void isBlockGoodForBottom(Level world, int x, int y, int z) throws MultiblockValidationException
+    protected void isBlockGoodForBottom(World world, int x, int y, int z) throws MultiblockValidationException
     {
         throw new MultiblockValidationException(String.format("%d, %d, %d - Block is not valid for use in the machine's interior", x, y, z));
     }
@@ -673,7 +673,7 @@ public abstract class MultiblockControllerBase
      * @throws MultiblockValidationException if the tested block is not allowed on the machine's side
      *                                       faces
      */
-    protected void isBlockGoodForSides(Level world, int x, int y, int z) throws MultiblockValidationException
+    protected void isBlockGoodForSides(World world, int x, int y, int z) throws MultiblockValidationException
     {
         throw new MultiblockValidationException(String.format("%d, %d, %d - Block is not valid for use in the machine's interior", x, y, z));
     }
@@ -688,7 +688,7 @@ public abstract class MultiblockControllerBase
      * @param z     Z coordinate of the block being tested
      * @throws MultiblockValidationException if the tested block is not allowed in the machine's interior
      */
-    protected void isBlockGoodForInterior(Level world, int x, int y, int z) throws MultiblockValidationException
+    protected void isBlockGoodForInterior(World world, int x, int y, int z) throws MultiblockValidationException
     {
         throw new MultiblockValidationException(String.format("%d, %d, %d - Block is not valid for use in the machine's interior", x, y, z));
     }
@@ -714,9 +714,9 @@ public abstract class MultiblockControllerBase
         return connectedParts.size();
     }
 
-    public abstract void writeToNBT(CompoundTag data);
+    public abstract void writeToNBT(CompoundNBT data);
 
-    public abstract void readFromNBT(CompoundTag data);
+    public abstract void readFromNBT(CompoundNBT data);
 
     /**
      * Force this multiblock to recalculate its minimum and maximum coordinates
@@ -793,7 +793,7 @@ public abstract class MultiblockControllerBase
      *
      * @param data A fresh compound tag to write your multiblock data into
      */
-    public abstract void formatDescriptionPacket(CompoundTag data);
+    public abstract void formatDescriptionPacket(CompoundNBT data);
 
     /**
      * Called when the save delegate's tile entity receiving a description
@@ -801,7 +801,7 @@ public abstract class MultiblockControllerBase
      *
      * @param data A compound tag containing multiblock data to import
      */
-    public abstract void decodeDescriptionPacket(CompoundTag data);
+    public abstract void decodeDescriptionPacket(CompoundNBT data);
 
     /**
      * @return True if this controller has no associated blocks, false otherwise
@@ -1142,7 +1142,7 @@ public abstract class MultiblockControllerBase
         }
     }
 
-    public static void updateBlock(Level world, BlockPos pos)
+    public static void updateBlock(World world, BlockPos pos)
     {
         BlockState state = world.getBlockState(pos);
         world.sendBlockUpdated(pos, state, state, 3);
@@ -1170,6 +1170,6 @@ public abstract class MultiblockControllerBase
         {
             return;
         }
-        worldObj.blockEntityChanged(referenceCoord);
+        worldObj.blockEntityChanged(referenceCoord, worldObj.getBlockEntity(referenceCoord));
     }
 }

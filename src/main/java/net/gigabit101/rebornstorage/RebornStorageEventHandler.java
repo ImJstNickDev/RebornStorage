@@ -1,20 +1,11 @@
 package net.gigabit101.rebornstorage;
 
 import com.refinedmods.refinedstorage.api.autocrafting.ICraftingManager;
-import com.refinedmods.refinedstorage.api.network.node.INetworkNode;
-import com.refinedmods.refinedstorage.apiimpl.API;
-import com.refinedmods.refinedstorage.apiimpl.network.node.NetworkNode;
-import com.refinedmods.refinedstorage.apiimpl.network.node.WirelessTransmitterNetworkNode;
-import com.refinedmods.refinedstorage.util.StackUtils;
-import net.gigabit101.rebornstorage.client.screens.AdvancedWirelessTransmitterScreen;
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockRegistry;
-import net.gigabit101.rebornstorage.nodes.AdvancedWirelessTransmitterNode;
 import net.gigabit101.rebornstorage.nodes.CraftingNode;
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.ResourceLocation;
 import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,7 +23,7 @@ public class RebornStorageEventHandler
 
     public static void queue(ICraftingManager craftingManager, CraftingNode node, String reason)
     {
-        if (node.getLevel().isClientSide)
+        if (node.getWorld().isClientSide)
         {
             return;
         }
@@ -43,7 +34,7 @@ public class RebornStorageEventHandler
                 return;
             }
         }
-        rebuildQueue.add(Pair.of(craftingManager, new RebuildReason(node.getPos(), node.getLevel().dimension().getRegistryName(), reason)));
+        rebuildQueue.add(Pair.of(craftingManager, new RebuildReason(node.getPos(), node.getWorld().dimension().getRegistryName(), reason)));
     }
 
     @SubscribeEvent

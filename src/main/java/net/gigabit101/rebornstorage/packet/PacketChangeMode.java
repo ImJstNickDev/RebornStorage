@@ -3,16 +3,16 @@ package net.gigabit101.rebornstorage.packet;
 import com.refinedmods.refinedstorage.integration.curios.CuriosIntegration;
 import net.gigabit101.rebornstorage.init.ModItems;
 import net.gigabit101.rebornstorage.items.ItemWirelessGrid;
-import net.minecraft.ChatFormatting;
-import net.minecraft.Util;
-import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.Container;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.network.NetworkEvent;
+import net.minecraft.util.text.TextFormatting;
+import net.minecraft.util.Util;
+import net.minecraft.network.PacketBuffer;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.entity.player.ServerPlayerEntity;
+import net.minecraft.inventory.IInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.commons.lang3.tuple.ImmutableTriple;
 import top.theillusivec4.curios.api.CuriosApi;
 
@@ -26,9 +26,9 @@ public class PacketChangeMode
 {
     public PacketChangeMode() {}
 
-    public static void encode(PacketChangeMode packetGui, FriendlyByteBuf buf) {}
+    public static void encode(PacketChangeMode packetGui, PacketBuffer buf) {}
 
-    public static PacketChangeMode decode(FriendlyByteBuf buf)
+    public static PacketChangeMode decode(PacketBuffer buf)
     {
         return new PacketChangeMode();
     }
@@ -37,13 +37,13 @@ public class PacketChangeMode
     {
         public static void handle(final PacketChangeMode message, Supplier<NetworkEvent.Context> ctx)
         {
-            Set<Item> validItems = new HashSet(Arrays.asList(ModItems.WIRELESS_GRID.get(), ModItems.CREATIVE_WIRELESS_GRID.get()));
+            Set<Item> validItems = new HashSet<>(Arrays.asList(ModItems.WIRELESS_GRID.get(), ModItems.CREATIVE_WIRELESS_GRID.get()));
 
             ctx.get().enqueueWork(() ->
             {
-                ServerPlayer player = ctx.get().getSender();
+                ServerPlayerEntity player = ctx.get().getSender();
                 if (player == null) return;
-                Container inv = player.getInventory();
+                IInventory inv = player.inventory;
                 int slotFound = -1;
 
                 //Loop the players inventory looking for our item
@@ -73,7 +73,7 @@ public class PacketChangeMode
                 if (slotFound != -1)
                 {
                     //If we find our stack before Curio update this stack
-                    updateStack(player.getInventory().getItem(slotFound), player);
+                    updateStack(player.inventory.getItem(slotFound), player);
                 }
 
             });
@@ -81,26 +81,27 @@ public class PacketChangeMode
         }
     }
 
-    public static void updateStack(ItemStack stack, Player player)
+    public static void updateStack(ItemStack stack, PlayerEntity player)
     {
         if (player.level.isClientSide)
             return;
-        if(stack.getItem() instanceof ItemWirelessGrid itemWirelessGrid)
+        if(stack.getItem() instanceof ItemWirelessGrid)
         {
+            ItemWirelessGrid itemWirelessGrid = (ItemWirelessGrid) stack.getItem();
             ItemWirelessGrid.MODE current = itemWirelessGrid.getMode(stack);
             switch (current)
             {
                 case CRAFTING:
                     itemWirelessGrid.setMode(stack, ItemWirelessGrid.MODE.FLUID);
-                    player.sendMessage(new TextComponent(ChatFormatting.GOLD + "MODE: " + ItemWirelessGrid.MODE.FLUID.name()), Util.NIL_UUID);
+                    player.sendMessage(new StringTextComponent(TextFormatting.GOLD + "MODE: " + ItemWirelessGrid.MODE.FLUID.name()), Util.NIL_UUID);
                     break;
                 case FLUID:
                     itemWirelessGrid.setMode(stack, ItemWirelessGrid.MODE.MONITOR);
-                    player.sendMessage(new TextComponent(ChatFormatting.GOLD + "MODE: " + ItemWirelessGrid.MODE.MONITOR.name()), Util.NIL_UUID);
+                    player.sendMessage(new StringTextComponent(TextFormatting.GOLD + "MODE: " + ItemWirelessGrid.MODE.MONITOR.name()), Util.NIL_UUID);
                     break;
                 case MONITOR:
                     itemWirelessGrid.setMode(stack, ItemWirelessGrid.MODE.CRAFTING);
-                    player.sendMessage(new TextComponent(ChatFormatting.GOLD + "MODE: " + ItemWirelessGrid.MODE.CRAFTING.name()), Util.NIL_UUID);
+                    player.sendMessage(new StringTextComponent(TextFormatting.GOLD + "MODE: " + ItemWirelessGrid.MODE.CRAFTING.name()), Util.NIL_UUID);
                     break;
             }
         }

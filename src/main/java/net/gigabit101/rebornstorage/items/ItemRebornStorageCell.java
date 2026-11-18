@@ -6,16 +6,15 @@ import com.refinedmods.refinedstorage.api.storage.disk.StorageDiskSyncData;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import com.refinedmods.refinedstorage.render.Styles;
 import net.gigabit101.rebornstorage.client.CreativeTabRebornStorage;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.network.chat.TranslatableComponent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.level.Level;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.text.TranslationTextComponent;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.entity.Entity;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.item.ItemStack;
+import net.minecraft.client.util.ITooltipFlag;
+import net.minecraft.world.World;
 
 import java.util.List;
 import java.util.UUID;
@@ -35,20 +34,20 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
     }
 
     @Override
-    public void inventoryTick(ItemStack stack, Level world, Entity entity, int itemSlot, boolean isSelected)
+    public void inventoryTick(ItemStack stack, World world, Entity entity, int itemSlot, boolean isSelected)
     {
         super.inventoryTick(stack, world, entity, itemSlot, isSelected);
-        if (!world.isClientSide && !stack.hasTag() && entity instanceof Player)
+        if (!world.isClientSide && !isValid(stack) && entity instanceof PlayerEntity)
         {
             UUID id = UUID.randomUUID();
-            API.instance().getStorageDiskManager((ServerLevel) world).set(id, API.instance().createDefaultItemDisk((ServerLevel) world, getCapacity(stack), (Player) entity));
-            API.instance().getStorageDiskManager((ServerLevel) world).markForSaving();
+            API.instance().getStorageDiskManager((ServerWorld) world).set(id, net.gigabit101.rebornstorage.storage.RebornItemDiskFactory.INSTANCE.create((ServerWorld) world, getCapacity(stack), entity.getUUID()));
+            API.instance().getStorageDiskManager((ServerWorld) world).markForSaving();
             setId(stack, id);
         }
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, @org.jetbrains.annotations.Nullable Level level, List<net.minecraft.network.chat.Component> tooltip, TooltipFlag flag)
+    public void appendHoverText(ItemStack stack, @javax.annotation.Nullable World level, List<net.minecraft.util.text.ITextComponent> tooltip, ITooltipFlag flag)
     {
         super.appendHoverText(stack, level, tooltip, flag);
         if (isValid(stack))
@@ -63,22 +62,47 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
             {
                 if (data.getCapacity() == -1)
                 {
-                    tooltip.add(new TranslatableComponent("misc.refinedstorage.storage.stored", API.instance().getQuantityFormatter().format(data.getStored())).setStyle(Styles.GRAY));
+                    tooltip.add(new TranslationTextComponent("misc.refinedstorage.storage.stored", API.instance().getQuantityFormatter().format(data.getStored())).setStyle(Styles.GRAY));
                 } else
                 {
-                    tooltip.add(new TranslatableComponent("misc.refinedstorage.storage.stored_capacity", API.instance().getQuantityFormatter().format(data.getStored()), API.instance().getQuantityFormatter().format(data.getCapacity())).setStyle(Styles.GRAY));
+                    tooltip.add(new TranslationTextComponent("misc.refinedstorage.storage.stored_capacity", API.instance().getQuantityFormatter().format(data.getStored()), API.instance().getQuantityFormatter().format(data.getCapacity())).setStyle(Styles.GRAY));
                 }
             }
             if (flag.isAdvanced())
             {
-                tooltip.add(new TextComponent(id.toString()));
+                tooltip.add(new StringTextComponent(id.toString()));
             }
         }
     }
 
 
+    /** Match RS: only an empty disk can be separated into its component and housing. */
     @Override
-    public int getEntityLifespan(ItemStack stack, Level world)
+    public net.minecraft.util.ActionResult<ItemStack> use(World world, PlayerEntity player, net.minecraft.util.Hand hand)
+    {
+        ItemStack stack = player.getItemInHand(hand);
+        if (!world.isClientSide && player.isShiftKeyDown() && isValid(stack))
+        {
+            com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskManager manager = API.instance().getStorageDiskManager((ServerWorld) world);
+            com.refinedmods.refinedstorage.api.storage.disk.IStorageDisk<?> disk = manager.getByStack(stack);
+            if (disk != null && disk.getStored() == 0)
+            {
+                Item part = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.util.ResourceLocation("rebornstorage", "storagepart_" + (capacity / 1000) + "k"));
+                if (part != null)
+                {
+                    ItemStack component = new ItemStack(part);
+                    if (!player.inventory.add(component)) player.drop(component, false);
+                    manager.remove(getId(stack));
+                    manager.markForSaving();
+                    return net.minecraft.util.ActionResult.success(new ItemStack(com.refinedmods.refinedstorage.RSItems.STORAGE_HOUSING.get()));
+                }
+            }
+        }
+        return net.minecraft.util.ActionResult.pass(stack);
+    }
+
+    @Override
+    public int getEntityLifespan(ItemStack stack, World world)
     {
         return Integer.MAX_VALUE;
     }
@@ -92,8 +116,7 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
     @Override
     public void setId(ItemStack disk, UUID id)
     {
-        disk.setTag(new CompoundTag());
-        disk.getTag().putUUID(NBT_ID, id);
+        disk.getOrCreateTag().putUUID(NBT_ID, id);
     }
 
     @Override

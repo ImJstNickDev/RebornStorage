@@ -1,92 +1,100 @@
-# Reborn Storage: Forge 1.16.5 port preparation
+# Port and verification notes
 
-Status: **project preparation only; implementation paused at the user's request**.
-The user will change model before implementation resumes. No Java sources or
-runtime resources have been ported, no working artifact has been produced, and
-nothing has been installed in the user's modpack. An exploratory compile was
-interrupted; the provisional build configuration is local and unvalidated.
+## Baseline and scope
 
-## Baseline and target
+Implemented backport, version `1.16.5-0.1.0`, branch `port/forge-1.16.5`.
+Upstream baseline: `TechReborn/RebornStorage`, branch `1.18.2`, commit
+`fcbd0496e360ba370d1115910f6e6dd61d19ab52`. This is an unofficial fork.
 
-- Upstream: https://github.com/TechReborn/RebornStorage
-- Baseline branch: `1.18.2`
-- Baseline commit: `fcbd0496e360ba370d1115910f6e6dd61d19ab52`
-- Work branch: `port/forge-1.16.5`
-- Target: Minecraft 1.16.5, Forge 36.2.26, Refined Storage 1.9.17.
-- Existing addons: ExtraStorage 1.6.1, Refined Storage Addons 0.7.4,
-  RSInfinityBooster 1.1+13.
-- Preserve upstream license and attribution. This is an unofficial backport.
+Targets Forge 36.2.26 / RS 1.9.17, with ExtraStorage 1.6.1 and optional
+RSInfinityBooster 1.16.5-1.1+13 and Curios 4.0.8.2. No changes have been
+installed into the user's Prism modpack.
 
-## Accepted scope
+The retained features are the multiblock crafter, all three Super Wireless Grid
+modes and four item disk tiers above ExtraStorage's 16384k. Lower duplicate disks,
+fluid disks, the advanced transmitter and the unregistered Patchouli guide are
+excluded. The creative grid remains for testing. README documents controls,
+construction, dependencies and recipes.
 
-1. Multiblock crafter, including all four structural blocks, pattern storage,
-   GUI, persistence, networking and RS integration.
-2. Super Wireless Crafting Grid with crafting/items, fluids and crafting-monitor
-   modes. Verify all modes with RSInfinityBooster's same-dimension Infinity Card
-   and interdimensional Dimension Card; do not claim compatibility from class
-   inheritance alone.
-3. Four NEW item-disk tiers: **32768k, 65536k, 131072k, 262144k** (decimal k = 1000).
-   Reuse RS's normal storage APIs; no changes to RS numeric types are planned.
-4. Supporting components actually needed by the retained features.
+## Implementation decisions
 
-Exclude duplicate Reborn item/fluid disk tiers, their unused components and the
-Advanced Wireless Transmitter (range is already covered by RSInfinityBooster).
-The old guide book is not registered upstream. Decide whether the Creative
-variant of the retained grid is useful for testing; do not add unrelated content.
+- Java 8 bytecode; JDK 17 runs Gradle 7.4 / ForgeGradle 5.1.77. Development game
+  processes use JDK 8. Forge, RS and Curios APIs use the 1.16.5 names/signatures.
+- Server registration is separated from client screens/keybindings.
+- The RS node factory reads the full node state. Node inventories suppress dirty
+  notifications while deserializing, avoiding recursive SavedData loading.
+  RS ownership/configuration are saved through the base network node.
+- Pattern inventories remain in RS's node saved data; each storage tile persists
+  its page ordering. Page ownership is per container/viewer. GUI packets require
+  an existing matching menu, interaction distance and RS MODIFY permission.
+- Disassembly/chunk pause invalidate the crafting pattern cache. Block breaking
+  drops stored patterns on the server and removes the RS node. Four block loot
+  tables return the structural blocks themselves.
+- CPU policy deliberately follows newer Reborn versions: interval
+  `max(5-cpus,1)`, successful-update budget `max(cpus,1)`. The old 1.18.2
+  `cpus/5` policy was not retained. No large-crafter throughput claim is made.
+- The normal RS wireless transmitter remains the integration point for both
+  RSInfinityBooster cards. Every mode uses INetworkItemProvider, energy checks
+  and RS permissions; a stopped network is rejected even on the booster path.
+- Disks preserve unrelated NBT when assigning UUIDs. A dedicated
+  `rebornstorage:item` factory delegates storage mechanics to RS, supports
+  persisted contents and recovers the correct disk item instead of an RS
+  creative disk. Empty-disk disassembly refuses nonempty/missing storage data.
+- New component recipes chain 3× the prior tier plus ExtraStorage-style support
+  ingredients. The installed ExtraStorage 16384k recipe was inspected; searches
+  of the pack's KubeJS scripts found no ExtraStorage/16384 recipe override.
+  No recipe consumes a filled disk.
 
-## Recipe requirement from the user
+## Automated verification
 
-The new disks must not be easier to obtain than ExtraStorage's 16384k disk.
-Preserve the existing progression: the first new component must depend on the
-existing 16384k component, and later components on the previous tier. Inspect
-both the installed JAR recipes AND the pack's KubeJS changes before settling
-quantities and additional ingredients. Do not craft using filled disks in a way
-that loses their contents; prefer storage components and empty housings.
+Verified on 2026-11-18: build/reobfuscation succeeds; the server suite passes
+**94 checks on each of two consecutive starts**; the client suite passes all
+three wireless screens and both crafter pages. Screenshots were visually
+inspected. Release classes are Java 8 (major 52), all JSON resources parse, and
+neither test source set is present in the release JAR. The reobfuscated release
+JAR also starts successfully on a separately installed Forge 36.2.26 dedicated
+server with the production dependency JARs, followed by a clean shutdown.
 
-Observed ExtraStorage recipe for `storagepart_16384k`: pattern `DID/GRG/DGD`,
-where G is `#refinedstorage:parts/items/4096k` (three components), D is an advanced
-processor (four), I is quartz-enriched iron and R is redstone. This observation
-is not yet a complete audit of KubeJS overrides or a final new recipe design.
+Server suite (`src/integrationTest`, excluded from the release JAR):
 
-The pack also has an endgame 9x9 Extended Crafting recipe for RS's Creative
-Storage Disk; the new tiers should fit between ordinary disks and that goal.
+- Real dedicated server startup with the target dependencies on Java 8.
+- Four capacities, full insertion/extraction, excess rejection, NBT round trips,
+  UUID/tier recovery, preservation of custom names, empty-only disassembly,
+  and loading of all eight new disk/component recipes.
+- 4×4×4 assembly with six CPUs and two storage blocks; exact scheduler budget,
+  RS connection, break/reassembly and pattern preservation.
+- Full node NBT round trip, including owner; pattern and disk UUID persistence
+  through a real server shutdown/restart.
+- Independent concurrent viewer pages, distance validation and denied RS MODIFY
+  permission; denial also checked for all three wireless modes.
+- Infinity Card at coordinates 100000/100000 in the Overworld and Dimension Card
+  with a distinct test player in the Nether: all three modes open, consume energy
+  and refuse an empty battery. The tests assert the player's actual dimension.
+- An actual RS crafting task makes 400 oak planks from 100 oak logs using a new
+  disk in the disk drive. A Disk Manipulator transfers contents from a 262144k
+  disk and returns the original disk tier.
 
-## Findings to retain, not runtime verification
+Client suite (`src/clientTest`, excluded from the release JAR):
 
-- RS 1.9.17 already exposes `getUpdateInterval()` and
-  `getMaximumSuccessfulCraftingUpdates()`, along with pattern/node APIs.
-- `createDefaultItemDisk` and disk counters use `int`. The selected four tiers
-  are representable; numeric-boundary and aggregate behavior still merit tests.
-- Upstream 1.18.2 has 50 Java files / about 6674 physical lines; the multiblock
-  framework is about 2830 lines. Estimates are not implementation progress.
-- 1.18.2 crafting speed divides CPU count by 5; 1.20.1/1.20.4 return CPU count.
-  Explicitly choose and document the backport speed policy; do not silently
-  inherit the slower formula or promise benchmark results from API budgets.
-- Upstream branches named 1.16.1 and 1.14.4 still target 1.12.2 internally and
-  are not useful completed ports.
-- Porting hotspots: block entity lifecycle, NBT, chunk/world events, GUI/menu
-  providers, Forge network packages, RS implementation-class names, Java syntax.
-- The inherited build references an absent access transformer and obsolete
-  dependency infrastructure; replace it deliberately when implementation starts.
+- Loads a copy of the saved integration world in a real Minecraft client.
+- Opens crafting, fluid and monitor screens through the network item flow.
+- Opens the multiblock menu and changes to page two through the custom packet.
+- Saves screenshots under `run/client/screenshots/` for visual inspection.
 
-## Verification needed during implementation
+`scripts/test_port.py` exports the ForgeGradle launch then starts the game as an
+isolated process, checks its exit status and fresh PASS result, and rejects node
+loading failures. This also avoids the Gradle-daemon shutdown issue observed when
+running Minecraft directly as a child of Gradle in this environment. Server tests
+run twice. Logs are in `run/integration/test-1.log` and `test-2.log`; client logs
+and screenshots stay in `run/client/`.
 
-- Compile/reobfuscate against the target RS and Forge versions.
-- Dedicated-server startup and client login; verify client-only isolation.
-- Assemble/break/reassemble crafter; save/restart and chunk unload/reload.
-- Pattern inventory, GUI pages, permissions, concurrent players, crafting tasks.
-- All three grid modes with both RSInfinity cards, power use and security.
-- Disk insertion/extraction, empty-disk disassembly, Disk Manipulator transfers,
-  persistence and capacity boundaries; validate all recipe IDs and ingredients.
-- Real throughput measurements at stable TPS, separate from theoretical limits.
+## Remaining validation limits
 
-## Local workspace
-
-Checkout: `/home/nico/code/personal/reborn-storage-1.16.5`.
-The ignored `libs/` directory holds local copies of RS 1.9.17 and
-RSInfinityBooster 1.1+13 for development, not redistribution.
-Ignored `.local-investigation/` holds the interrupted Gradle log, Mojang mappings
-and a first build draft. None are part of the public source deliverable.
-
-The actual modpack has not been changed. Do not install or start the real pack
-as a side effect of preparing or building the project.
+The targeted dependency set is tested; the full Cuboid Outpost pack is not.
+Client GUI testing uses an integrated server, while the separate dedicated-server
+suite uses simulated players. A remote human multiplayer session, forced chunk
+unload/reload, long-running workloads and large-scale throughput benchmarks remain
+manual validation. Curios equipment/keybinding interaction was not exercised by
+the automated screen suite. There is no supported save migration from other
+Minecraft versions or upstream Reborn disk IDs. RS's numeric and performance
+limits remain those of RS 1.9.17.

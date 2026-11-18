@@ -1,11 +1,11 @@
 package net.gigabit101.rebornstorage.core.multiblock;
 
-import net.minecraft.core.BlockPos;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.block.BlockState;
 
 import java.util.Set;
 
@@ -17,13 +17,13 @@ import java.util.Set;
  * <p>
  * {@link }
  */
-public abstract class IMultiblockPart extends BlockEntity implements MenuProvider
+public abstract class IMultiblockPart extends TileEntity implements INamedContainerProvider
 {
     public static final int INVALID_DISTANCE = Integer.MAX_VALUE;
 
-    public IMultiblockPart(BlockEntityType<?> tileEntityTypeIn, BlockPos blockPos, BlockState blockState)
+    public IMultiblockPart(TileEntityType<?> tileEntityTypeIn)
     {
-        super(tileEntityTypeIn, blockPos, blockState);
+        super(tileEntityTypeIn);
     }
 
     /**
@@ -224,7 +224,7 @@ public abstract class IMultiblockPart extends BlockEntity implements MenuProvide
      * @return The part's saved multiblock game-data in NBT format, or null if
      * there isn't any.
      */
-    public abstract CompoundTag getMultiblockSaveData();
+    public abstract CompoundNBT getMultiblockSaveData();
 
     /**
      * Called after a block is added and the controller has incorporated the

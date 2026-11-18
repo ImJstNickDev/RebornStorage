@@ -1,8 +1,8 @@
 package net.gigabit101.rebornstorage.core.multiblock;
 
 import net.gigabit101.rebornstorage.RebornStorage;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.HashMap;
 import java.util.Set;
@@ -16,14 +16,14 @@ import java.util.Set;
 public class MultiblockRegistry
 {
     // World > WorldRegistry map
-    private static HashMap<Level, MultiblockWorldRegistry> registries = new HashMap<Level, MultiblockWorldRegistry>();
+    private static HashMap<World, MultiblockWorldRegistry> registries = new HashMap<World, MultiblockWorldRegistry>();
 
     /**
      * Called before Tile Entities are ticked in the world. Do bookkeeping here.
      *
      * @param world The world being ticked
      */
-    public static void tickStart(Level world)
+    public static void tickStart(World world)
     {
         if (registries.containsKey(world))
         {
@@ -39,7 +39,7 @@ public class MultiblockRegistry
      * @param world The world which has finished loading a chunk
      * @param chunk Loaded chunk
      */
-    public static void onChunkLoaded(Level world, LevelChunk chunk)
+    public static void onChunkLoaded(World world, Chunk chunk)
     {
         if (registries.containsKey(world))
         {
@@ -54,7 +54,7 @@ public class MultiblockRegistry
      * @param world The world into which this part is loading.
      * @param part  The part being loaded.
      */
-    public static void onPartAdded(Level world, IMultiblockPart part)
+    public static void onPartAdded(World world, IMultiblockPart part)
     {
         MultiblockWorldRegistry registry = getOrCreateRegistry(world);
         registry.onPartAdded(part);
@@ -66,7 +66,7 @@ public class MultiblockRegistry
      * @param world The world from which a multiblock part is being removed.
      * @param part  The part being removed.
      */
-    public static void onPartRemovedFromWorld(Level world, IMultiblockPart part)
+    public static void onPartRemovedFromWorld(World world, IMultiblockPart part)
     {
         if (registries.containsKey(world))
         {
@@ -80,7 +80,7 @@ public class MultiblockRegistry
      *
      * @param world The world being unloaded.
      */
-    public static void onWorldUnloaded(Level world)
+    public static void onWorldUnloaded(World world)
     {
         if (registries.containsKey(world))
         {
@@ -96,7 +96,7 @@ public class MultiblockRegistry
      * @param world      The world containing the multiblock
      * @param controller The dirty controller
      */
-    public static void addDirtyController(Level world, MultiblockControllerBase controller)
+    public static void addDirtyController(World world, MultiblockControllerBase controller)
     {
         if (registries.containsKey(world))
         {
@@ -114,7 +114,7 @@ public class MultiblockRegistry
      * @param world      The world formerly containing the multiblock
      * @param controller The dead controller
      */
-    public static void addDeadController(Level world, MultiblockControllerBase controller)
+    public static void addDeadController(World world, MultiblockControllerBase controller)
     {
         if (registries.containsKey(world))
         {
@@ -130,7 +130,7 @@ public class MultiblockRegistry
      * @return An unmodifiable set of controllers active in the given world, or
      * null if there are none.
      */
-    public static Set<MultiblockControllerBase> getControllersFromWorld(Level world)
+    public static Set<MultiblockControllerBase> getControllersFromWorld(World world)
     {
         if (registries.containsKey(world))
         {
@@ -141,7 +141,7 @@ public class MultiblockRegistry
 
     // / *** PRIVATE HELPERS *** ///
 
-    private static MultiblockWorldRegistry getOrCreateRegistry(Level world)
+    private static MultiblockWorldRegistry getOrCreateRegistry(World world)
     {
         if (registries.containsKey(world))
         {

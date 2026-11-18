@@ -1,10 +1,10 @@
 package net.gigabit101.rebornstorage.client;
 
 import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPatternProvider;
-import net.minecraft.world.item.ItemStack;
+import net.minecraft.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.SlotItemHandler;
-import org.jetbrains.annotations.NotNull;
+import javax.annotation.Nonnull;
 
 public class SlotFiltered extends SlotItemHandler
 {
@@ -14,7 +14,7 @@ public class SlotFiltered extends SlotItemHandler
     }
 
     @Override
-    public boolean mayPlace(@NotNull ItemStack stack)
+    public boolean mayPlace(@Nonnull ItemStack stack)
     {
         return stack.getItem() instanceof ICraftingPatternProvider;
     }

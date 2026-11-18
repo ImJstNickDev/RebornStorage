@@ -1,10 +1,10 @@
 package net.gigabit101.rebornstorage.core.multiblock;
 
 import net.gigabit101.rebornstorage.RebornStorage;
-import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.ChunkPos;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 
 import java.util.*;
 
@@ -18,7 +18,7 @@ import java.util.*;
 public class MultiblockWorldRegistry
 {
 
-    private Level worldObj;
+    private World worldObj;
 
     // Active controllers
     private Set<MultiblockControllerBase> controllers;
@@ -47,7 +47,7 @@ public class MultiblockWorldRegistry
     private Object partsAwaitingChunkLoadMutex;
     private final Object orphanedPartsMutex;
 
-    public MultiblockWorldRegistry(final Level world)
+    public MultiblockWorldRegistry(final World world)
     {
         worldObj = world;
 
@@ -436,7 +436,7 @@ public class MultiblockWorldRegistry
      * @param chunk Chunk that was
      *              loaded
      */
-    public void onChunkLoaded(LevelChunk chunk)
+    public void onChunkLoaded(Chunk chunk)
     {
         int chunkHash = chunk.getPos().hashCode();
         if (partsAwaitingChunkLoad.containsKey(chunkHash))

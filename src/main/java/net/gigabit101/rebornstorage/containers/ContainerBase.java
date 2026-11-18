@@ -1,21 +1,21 @@
 package net.gigabit101.rebornstorage.containers;
 
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.inventory.Slot;
-import net.minecraft.world.item.ItemStack;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.inventory.container.ContainerType;
+import net.minecraft.inventory.container.Slot;
+import net.minecraft.item.ItemStack;
+import javax.annotation.Nullable;
 
-public class ContainerBase extends AbstractContainerMenu
+public class ContainerBase extends Container
 {
-    public ContainerBase(@Nullable MenuType<?> menuType, int id)
+    public ContainerBase(@Nullable ContainerType<?> menuType, int id)
     {
         super(menuType, id);
     }
 
-    public void drawPlayersInv(Inventory player, int x, int y)
+    public void drawPlayersInv(PlayerInventory player, int x, int y)
     {
         int i;
         for (i = 0; i < 3; ++i)
@@ -27,7 +27,7 @@ public class ContainerBase extends AbstractContainerMenu
         }
     }
 
-    public void drawPlayersHotBar(Inventory player, int x, int y)
+    public void drawPlayersHotBar(PlayerInventory player, int x, int y)
     {
         int i;
         for (i = 0; i < 9; ++i)
@@ -37,7 +37,7 @@ public class ContainerBase extends AbstractContainerMenu
     }
 
     @Override
-    public boolean stillValid(Player player)
+    public boolean stillValid(PlayerEntity player)
     {
         return false;
     }
@@ -51,7 +51,7 @@ public class ContainerBase extends AbstractContainerMenu
     }
 
     @Override
-    public ItemStack quickMoveStack(Player player, int slotIndex)
+    public ItemStack quickMoveStack(PlayerEntity player, int slotIndex)
     {
         ItemStack originalStack = ItemStack.EMPTY;
         Slot slot = (Slot) slots.get(slotIndex);

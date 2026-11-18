@@ -13,27 +13,27 @@ import net.gigabit101.rebornstorage.init.ModBlocks;
 import net.gigabit101.rebornstorage.Constants;
 import net.gigabit101.rebornstorage.multiblocks.MultiBlockCrafter;
 import net.gigabit101.rebornstorage.nodes.CraftingNode;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.inventory.container.INamedContainerProvider;
+import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.inventory.container.Container;
+import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import javax.annotation.Nonnull;
 import java.util.Optional;
 
-public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase implements MenuProvider, INetworkNodeProxy<CraftingNode>
+public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase implements INamedContainerProvider, INetworkNodeProxy<CraftingNode>
 {
     @Override
     public void isGoodForFrame() throws MultiblockValidationException
@@ -138,22 +138,22 @@ public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase
 
     public Optional<Integer> page = Optional.empty();
 
-    public BlockEntityMultiCrafter(BlockPos blockPos, BlockState blockstate)
+    public BlockEntityMultiCrafter()
     {
-        super(ModBlocks.CRAFTER_TILE.get(), blockPos, blockstate);
+        super(ModBlocks.CRAFTER_TILE.get());
     }
 
     @Override
     public void onLoad()
     {
         super.onLoad();
-        load(getUpdateTag());
+
     }
 
     @Override
-    public void load(CompoundTag data)
+    public void load(BlockState state, CompoundNBT data)
     {
-        super.load(data);
+        super.load(state, data);
 
         if (data.get("page") != null)
         {
@@ -162,20 +162,21 @@ public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase
     }
 
     @Override
-    protected void saveAdditional(CompoundTag data)
+    public CompoundNBT save(CompoundNBT data)
     {
-        super.saveAdditional(data);
+        super.save(data);
         if (page.isPresent())
         {
             data.putInt("page", page.get());
         }
+        return data;
     }
 
     @Override
-    public CompoundTag getUpdateTag()
+    public CompoundNBT getUpdateTag()
     {
-        CompoundTag tag = super.getUpdateTag();
-        saveAdditional(tag);
+        CompoundNBT tag = super.getUpdateTag();
+        save(tag);
         return tag;
     }
 
@@ -193,7 +194,7 @@ public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase
             }
             return clientNode;
         }
-        INetworkNodeManager manager = API.instance().getNetworkNodeManager((ServerLevel) level);
+        INetworkNodeManager manager = API.instance().getNetworkNodeManager((ServerWorld) level);
         INetworkNode node = manager.getNode(worldPosition);
         if (node == null || !node.getId().equals(Constants.MULTI_BLOCK_ID))
         {
@@ -219,9 +220,9 @@ public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase
         return super.getCapability(capability);
     }
 
-    @NotNull
+    @Nonnull
     @Override
-    public <T> LazyOptional<T> getCapability(@NotNull Capability<T> capability, @Nullable Direction side)
+    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction side)
     {
         if (capability == NetworkNodeProxyCapability.NETWORK_NODE_PROXY_CAPABILITY)
         {
@@ -230,16 +231,16 @@ public class BlockEntityMultiCrafter extends RectangularMultiblockTileEntityBase
         return super.getCapability(capability, side);
     }
 
-    @org.jetbrains.annotations.Nullable
+    @javax.annotation.Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player)
+    public Container createMenu(int id, PlayerInventory playerInventory, PlayerEntity player)
     {
         return new ContainerMultiCrafter(id, playerInventory, this);
     }
 
     @Override
-    public Component getDisplayName()
+    public ITextComponent getDisplayName()
     {
-        return new TextComponent("MultiBlock Crafter");
+        return new StringTextComponent("MultiBlock Crafter");
     }
 }

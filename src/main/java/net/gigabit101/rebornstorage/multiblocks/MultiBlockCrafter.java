@@ -7,8 +7,8 @@ import net.gigabit101.rebornstorage.core.multiblock.IMultiblockPart;
 import net.gigabit101.rebornstorage.core.multiblock.MultiblockControllerBase;
 import net.gigabit101.rebornstorage.core.multiblock.rectangular.RectangularMultiblockControllerBase;
 import net.gigabit101.rebornstorage.init.ModBlocks;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.world.level.Level;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.world.World;
 import net.minecraftforge.items.ItemStackHandler;
 
 import java.util.Map;
@@ -20,17 +20,17 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
     public Map<Integer, ItemStackHandler> invs = new TreeMap<>();
     public int speed = 0;
     public int pages = 0;
-    public Level level;
+    public World level;
     public int currentPage = 1;
 
-    public MultiBlockCrafter(Level world)
+    public MultiBlockCrafter(World world)
     {
         super(world);
         this.level = world;
     }
 
     @Override
-    public void onAttachedPartWithMultiblockData(IMultiblockPart iMultiblockPart, CompoundTag nbtTagCompound)
+    public void onAttachedPartWithMultiblockData(IMultiblockPart iMultiblockPart, CompoundNBT nbtTagCompound)
     {
         readFromNBT(nbtTagCompound);
     }
@@ -56,11 +56,8 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
         RebornStorage.logger.info("Rebuilding Multiblock Crafter due to " + reason);
         speed = 0;
         pages = 0;
-        TreeMap<Integer, BlockEntityMultiCrafter> collector = new TreeMap<>();
-        int append = 2745;
-        /*	we need to collect all storages first and assign ids after every storage is known
-         *	also we need them to be sorted ... so a treemap. 'append' is explained later
-         */
+        invs.clear();
+        java.util.List<BlockEntityMultiCrafter> collector = new java.util.ArrayList<>();
         for (IMultiblockPart part : connectedParts)
         {
             if (part.getBlockState().getBlock() == ModBlocks.BLOCK_MULTI_STORAGE.get())
@@ -68,13 +65,7 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
                 pages++;
                 BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) part;
                 tile.getNode().rebuildPatterns(reason);
-                if (tile.page.isPresent())
-                {
-                    collector.put(tile.page.get(), tile);
-                } else
-                {
-                    collector.put(append++, tile);
-                }
+                collector.add(tile);
             }
             if (part.getBlockState().getBlock() == ModBlocks.BLOCK_MULTI_CPU.get())
             {
@@ -82,11 +73,14 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
             }
         }
 
+        collector.sort(java.util.Comparator.comparingInt((BlockEntityMultiCrafter t) -> t.page.orElse(Integer.MAX_VALUE))
+            .thenComparing(t -> t.getBlockPos()));
         int newid = 0;
-        for (BlockEntityMultiCrafter tile : collector.values())
+        for (BlockEntityMultiCrafter tile : collector)
         {
             newid++;
             tile.page = Optional.of(newid);
+            tile.setChanged();
             invs.put(newid, tile.getNode().patterns);
         }
     }
@@ -105,6 +99,8 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
     @Override
     protected void onMachinePaused()
     {
+        for (IMultiblockPart part : connectedParts)
+            ((BlockEntityMultiCrafter)part).getNode().invalidate();
     }
 
     @Override
@@ -113,8 +109,8 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
         for (IMultiblockPart part : connectedParts)
         {
             BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) part;
-            tile.getNode().rebuildPatterns("machine disassembled");
             tile.getNode().invalidate();
+            tile.getNode().rebuildPatterns("machine disassembled");
         }
     }
 
@@ -182,25 +178,25 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase
     }
 
     @Override
-    public void writeToNBT(CompoundTag nbtTagCompound)
+    public void writeToNBT(CompoundNBT nbtTagCompound)
     {
         nbtTagCompound.putInt("currentpage", currentPage);
     }
 
     @Override
-    public void readFromNBT(CompoundTag nbtTagCompound)
+    public void readFromNBT(CompoundNBT nbtTagCompound)
     {
         currentPage = nbtTagCompound.getInt("currentpage");
     }
 
     @Override
-    public void formatDescriptionPacket(CompoundTag nbtTagCompound)
+    public void formatDescriptionPacket(CompoundNBT nbtTagCompound)
     {
         writeToNBT(nbtTagCompound);
     }
 
     @Override
-    public void decodeDescriptionPacket(CompoundTag nbtTagCompound)
+    public void decodeDescriptionPacket(CompoundNBT nbtTagCompound)
     {
         readFromNBT(nbtTagCompound);
     }

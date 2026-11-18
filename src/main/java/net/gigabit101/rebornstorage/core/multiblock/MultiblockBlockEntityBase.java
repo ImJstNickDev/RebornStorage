@@ -1,17 +1,15 @@
 package net.gigabit101.rebornstorage.core.multiblock;
 
 import net.gigabit101.rebornstorage.RebornStorage;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.Connection;
-import net.minecraft.network.protocol.Packet;
-import net.minecraft.network.protocol.game.ClientGamePacketListener;
-import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityType;
-import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.Nullable;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.network.NetworkManager;
+import net.minecraft.network.play.server.SUpdateTileEntityPacket;
+import net.minecraft.tileentity.TileEntity;
+import net.minecraft.tileentity.TileEntityType;
+import net.minecraft.block.BlockState;
+import javax.annotation.Nullable;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -24,18 +22,18 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
     private boolean visited;
 
     private boolean saveMultiblockData;
-    private CompoundTag cachedMultiblockData;
+    private CompoundNBT cachedMultiblockData;
 
-    public MultiblockBlockEntityBase(BlockEntityType<?> tileEntityTypeIn, BlockPos blockPos, BlockState blockState)
+    public MultiblockBlockEntityBase(TileEntityType<?> tileEntityTypeIn)
     {
-        super(tileEntityTypeIn, blockPos, blockState);
+        super(tileEntityTypeIn);
         controller = null;
         visited = false;
         saveMultiblockData = false;
         cachedMultiblockData = null;
     }
 
-    // /// Multiblock Connection Base Logic
+    // /// Multiblock NetworkManager Base Logic
     @Override
     public Set<MultiblockControllerBase> attachToNeighbors()
     {
@@ -90,9 +88,9 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
     }
 
     @Override
-    public void load(CompoundTag compoundTag)
+    public void load(BlockState state, CompoundNBT compoundTag)
     {
-        super.load(compoundTag);
+        super.load(state, compoundTag);
         // We can't directly initialize a multiblock controller yet, so we cache
         // the data here until
         // we receive a validate() call, which creates the controller and hands
@@ -104,15 +102,16 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
     }
 
     @Override
-    protected void saveAdditional(CompoundTag compoundTag)
+    public CompoundNBT save(CompoundNBT compoundTag)
     {
-        super.saveAdditional(compoundTag);
+        super.save(compoundTag);
         if (isMultiblockSaveDelegate() && isConnected())
         {
-            CompoundTag multiblockData = new CompoundTag();
+            CompoundNBT multiblockData = new CompoundNBT();
             this.controller.writeToNBT(multiblockData);
             compoundTag.put("multiblockData", multiblockData);
         }
+        return compoundTag;
     }
 
     @Override
@@ -131,15 +130,15 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
 
     @Nullable
     @Override
-    public Packet<ClientGamePacketListener> getUpdatePacket()
+    public SUpdateTileEntityPacket getUpdatePacket()
     {
-        CompoundTag compoundTag = new CompoundTag();
+        CompoundNBT compoundTag = new CompoundNBT();
         encodeDescriptionPacket(compoundTag);
-        return ClientboundBlockEntityDataPacket.create(this, blockEntity -> compoundTag);
+        return new SUpdateTileEntityPacket(getBlockPos(), 0, compoundTag);
     }
 
     @Override
-    public void onDataPacket(Connection net, ClientboundBlockEntityDataPacket pkt)
+    public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt)
     {
         super.onDataPacket(net, pkt);
         if(pkt != null && pkt.getTag() != null)
@@ -154,11 +153,11 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
      * @param packetData An NBT compound tag into which you should write your custom
      *                   description data.
      */
-    protected void encodeDescriptionPacket(CompoundTag packetData)
+    protected void encodeDescriptionPacket(CompoundNBT packetData)
     {
         if (this.isMultiblockSaveDelegate() && isConnected())
         {
-            CompoundTag tag = new CompoundTag();
+            CompoundNBT tag = new CompoundNBT();
             getMultiblockController().formatDescriptionPacket(tag);
             packetData.put("multiblockData", tag);
         }
@@ -170,11 +169,11 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
      *
      * @param packetData The NBT data from the tile entity's description packet.
      */
-    protected void decodeDescriptionPacket(CompoundTag packetData)
+    protected void decodeDescriptionPacket(CompoundNBT packetData)
     {
         if (packetData.get("multiblockData") != null)
         {
-            CompoundTag tag = packetData.getCompound("multiblockData");
+            CompoundNBT tag = packetData.getCompound("multiblockData");
             if (isConnected())
             {
                 getMultiblockController().decodeDescriptionPacket(tag);
@@ -193,7 +192,7 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
     }
 
     @Override
-    public CompoundTag getMultiblockSaveData()
+    public CompoundNBT getMultiblockSaveData()
     {
         return this.cachedMultiblockData;
     }
@@ -295,7 +294,7 @@ public abstract class MultiblockBlockEntityBase extends IMultiblockPart
     @Override
     public IMultiblockPart[] getNeighboringParts()
     {
-        BlockEntity te;
+        TileEntity te;
         List<IMultiblockPart> neighborParts = new ArrayList<IMultiblockPart>();
         BlockPos neighborPosition, partPosition = this.getWorldLocation();
 

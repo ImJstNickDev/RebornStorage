@@ -6,12 +6,12 @@ import com.refinedmods.refinedstorage.api.network.grid.IGridFactory;
 import com.refinedmods.refinedstorage.inventory.player.PlayerSlot;
 import net.gigabit101.rebornstorage.Constants;
 import net.gigabit101.rebornstorage.grid.crafting.WirelessCraftingGrid;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.tileentity.TileEntity;
 
 import javax.annotation.Nullable;
 
@@ -21,21 +21,21 @@ public class WirelessCraftingGridGridFactory implements IGridFactory
 
     @Nullable
     @Override
-    public IGrid createFromStack(Player player, ItemStack stack, PlayerSlot slot)
+    public IGrid createFromStack(PlayerEntity player, ItemStack stack, PlayerSlot slot)
     {
-        return new WirelessCraftingGrid(stack, player.getLevel(), player.getServer(), slot);
+        return new WirelessCraftingGrid(stack, player.level, player.getServer(), slot);
     }
 
     @Nullable
     @Override
-    public IGrid createFromBlock(Player player, BlockPos pos)
+    public IGrid createFromBlock(PlayerEntity player, BlockPos pos)
     {
         return null;
     }
 
     @Nullable
     @Override
-    public BlockEntity getRelevantBlockEntity(Level level, BlockPos pos)
+    public TileEntity getRelevantTile(World level, BlockPos pos)
     {
         return null;
     }

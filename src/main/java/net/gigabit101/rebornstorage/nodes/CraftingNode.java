@@ -4,7 +4,6 @@ import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPattern;
 import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPatternContainer;
 import com.refinedmods.refinedstorage.api.autocrafting.ICraftingPatternProvider;
 import com.refinedmods.refinedstorage.api.network.INetwork;
-import com.refinedmods.refinedstorage.api.network.node.INetworkNode;
 import com.refinedmods.refinedstorage.api.network.node.INetworkNodeManager;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import com.refinedmods.refinedstorage.apiimpl.network.node.ConnectivityStateChangeCause;
@@ -18,17 +17,17 @@ import net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter;
 import net.gigabit101.rebornstorage.init.ModBlocks;
 import net.gigabit101.rebornstorage.Constants;
 import net.gigabit101.rebornstorage.multiblocks.MultiBlockCrafter;
-import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TextComponent;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.Direction;
+import net.minecraft.nbt.CompoundNBT;
+import net.minecraft.util.text.ITextComponent;
+import net.minecraft.util.text.StringTextComponent;
+import net.minecraft.util.ResourceLocation;
+import net.minecraft.world.server.ServerWorld;
+import net.minecraft.item.ItemStack;
+import net.minecraft.world.World;
+import net.minecraft.block.Block;
+import net.minecraft.tileentity.TileEntity;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.IItemHandlerModifiable;
@@ -42,30 +41,28 @@ import java.util.UUID;
 
 public class CraftingNode extends NetworkNode implements ICraftingPatternContainer
 {
-    Level world;
-    BlockPos pos;
     List<ICraftingPattern> actualPatterns = new ArrayList<>();
-    @Nullable
-    INetwork network;
     int ticks = 0;
     private UUID uuid;
     private boolean needsRebuild = false;
+    private boolean reading;
     private boolean isValid;
     private int speed = -1;
 
     public static int craftingSpeed = 5;
     public static int invUpdateTime = 5;
 
-    public CraftingNode(Level level, BlockPos pos)
+    public CraftingNode(World level, BlockPos pos)
     {
         super(level, pos);
-        this.world = level;
-        this.pos = pos;
     }
 
     public void invalidate()
     {
         isValid = false;
+        speed = -1;
+        actualPatterns.clear();
+        if (network != null) RebornStorageEventHandler.queue(network.getCraftingManager(), this, "multiblock invalidated");
     }
 
     // An item handler that caches the first available and last used slots.
@@ -151,10 +148,7 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
         protected void onContentsChanged(int slot)
         {
             super.onContentsChanged(slot);
-            if (network != null)
-            {
-                markDirty();
-            }
+            if (!reading) markDirty();
             needsRebuild = true;
         }
 
@@ -209,7 +203,6 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     {
         if (!state)
         {
-            network.getCraftingManager().getTasks().forEach((task) -> network.getCraftingManager().cancel(task.getId()));
             actualPatterns.clear();
         }
         RebornStorageEventHandler.queue(network.getCraftingManager(), this, reason);
@@ -218,12 +211,12 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Nullable
     public BlockEntityMultiCrafter getTile()
     {
-        BlockEntity tileEntity = world.getBlockEntity(pos);
+        TileEntity tileEntity = world.getBlockEntity(pos);
         if (tileEntity instanceof BlockEntityMultiCrafter)
         {
             return (BlockEntityMultiCrafter) tileEntity;
         }
-        INetworkNodeManager manager = API.instance().getNetworkNodeManager((ServerLevel) level);
+        INetworkNodeManager manager = API.instance().getNetworkNodeManager((ServerWorld) world);
         manager.removeNode(getPos());
 
 //        RebornStorage.logger.warning(tileEntity + " is not an instance of TileMultiCrafter, this is an error and your RebornStorage multiblock may not work. Please report to the mod author");
@@ -281,7 +274,7 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Override
     public void onConnected(INetwork iNetwork)
     {
-        this.network = iNetwork;
+        super.onConnected(iNetwork);
         stateChange(network, true, "connected to network");
         rebuildPatterns("connected to network");
     }
@@ -289,7 +282,7 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Override
     public void onDisconnected(INetwork iNetwork)
     {
-        this.network = null;
+        super.onDisconnected(iNetwork);
         actualPatterns.clear();
         stateChange(iNetwork, true, "disconnected from network");
     }
@@ -297,7 +290,7 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Override
     public boolean isActive()
     {
-        return isValid;
+        return isValidMultiBlock(false) && super.isActive();
     }
 
     @Nullable
@@ -324,17 +317,18 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     }
 
     @Override
-    public CompoundTag write(CompoundTag nbtTagCompound)
+    public CompoundNBT write(CompoundNBT nbtTagCompound)
     {
         StackUtils.writeItems(patterns, 0, nbtTagCompound);
-        return nbtTagCompound;
+        return super.write(nbtTagCompound);
     }
 
     @Override
-    public void read(CompoundTag tag)
+    public void read(CompoundNBT tag)
     {
-        StackUtils.readItems(patterns, 0, tag);
-        super.read(tag);
+        reading = true;
+        try { StackUtils.readItems(patterns, 0, tag); super.read(tag); }
+        finally { reading = false; }
     }
 
     @Override
@@ -344,7 +338,7 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     }
 
     @Override
-    public Level getLevel()
+    public World getWorld()
     {
         return world;
     }
@@ -352,19 +346,7 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Override
     public void markDirty()
     {
-        if (world != null && !world.isClientSide)
-        {
-            try
-            {
-                INetworkNodeManager networkNodeManager = API.instance().getNetworkNodeManager((ServerLevel) world);
-                if (networkNodeManager != null)
-                {
-                    networkNodeManager.markForSaving();
-                }
-            } catch (Exception ignored)
-            {
-            }
-        }
+        if (!reading) super.markDirty();
     }
 
     @Override
@@ -384,13 +366,14 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Override
     public void setOwner(@Nullable UUID uuid)
     {
+        super.setOwner(uuid);
     }
 
     @Nullable
     @Override
     public UUID getOwner()
     {
-        return null;
+        return super.getOwner();
     }
 
     @Override
@@ -402,15 +385,12 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     @Override
     public int getMaximumSuccessfulCraftingUpdates()
     {
-        return Math.max(getCraftingCpus() / Math.max(craftingSpeed, 1), 1);
+        return Math.max(getCraftingCpus(), 1);
     }
 
     public int getCraftingCpus()
     {
-        if (isValid && speed != -1)
-        {
-            return speed;
-        }
+
         if (!isValidMultiBlock(false))
         {
             return 0;
@@ -442,13 +422,13 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     }
 
     @Override
-    public BlockEntity getConnectedBlockEntity()
+    public TileEntity getConnectedTile()
     {
         return null;
     }
 
     @Override
-    public BlockEntity getFacingBlockEntity()
+    public TileEntity getFacingTile()
     {
         return null;
     }
@@ -476,9 +456,9 @@ public class CraftingNode extends NetworkNode implements ICraftingPatternContain
     }
 
     @Override
-    public Component getName()
+    public ITextComponent getName()
     {
-        return new TextComponent("MultiBlock Crafter");
+        return new StringTextComponent("MultiBlock Crafter");
     }
 
     @Override

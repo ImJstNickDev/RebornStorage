@@ -1,25 +1,38 @@
 modLoader = "javafml" #mandatory
-loaderVersion = "[40,]" #mandatory
+loaderVersion = "[36,)" #mandatory
 license = "MIT License"
-credits = "" #optional
+credits = "Original mod by the Reborn Storage contributors; unofficial 1.16.5 backport."
 authors = "gigabit101" #optional
 [[mods]] #mandatory
 modId = "rebornstorage" #mandatory
 version = "${file.jarVersion}" #mandatory
-displayName = "RebornStorage" #mandatory
-description = ''' A large multiblock that can store all of your crafting patterns in one place
-'''
+displayName = "Reborn Storage (1.16.5 Backport)" #mandatory
+description = '''Unofficial Forge 1.16.5 backport: multiblock crafter, three-mode Super Wireless Grid and four item disk tiers above ExtraStorage 16384k.'''
+
+[[dependencies.rebornstorage]]
+modId = "forge"
+mandatory = true
+versionRange = "[36.2.26,37)"
+ordering = "NONE"
+side = "BOTH"
 
 [[dependencies.rebornstorage]]
 modId = "minecraft"
 mandatory = true
-versionRange = "[1.18.2]"
+versionRange = "[1.16.5]"
 ordering = "NONE"
 side = "BOTH"
 
 [[dependencies.rebornstorage]]
 modId = "refinedstorage"
 mandatory = true
-versionRange = "[1.10.2,)"
+versionRange = "[1.9.17,1.10)"
+ordering = "AFTER"
+side = "BOTH"
+
+[[dependencies.rebornstorage]]
+modId = "extrastorage"
+mandatory = true
+versionRange = "[1.6.1,)"
 ordering = "AFTER"
 side = "BOTH"

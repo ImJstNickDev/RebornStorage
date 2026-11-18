@@ -1,19 +1,19 @@
 package net.gigabit101.rebornstorage.client.screens;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.matrix.MatrixStack;
 import net.gigabit101.rebornstorage.Constants;
-import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.util.ResourceLocation;
 
 public class ScreenBuilder
 {
     public static final ResourceLocation GUI_SHEET = new ResourceLocation(Constants.MOD_ID.toLowerCase() + ":" + "textures/gui/gui_sheet.png");
 
-    public void drawDefaultBackground(Screen gui, PoseStack matrixStack, int x, int y, int width, int height, int textureXSize, int textureYSize)
+    public void drawDefaultBackground(Screen gui, MatrixStack matrixStack, int x, int y, int width, int height, int textureXSize, int textureYSize)
     {
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, GUI_SHEET);
+        RenderSystem.color4f(1.0F, 1.0F, 1.0F, 1.0F);
+        net.minecraft.client.Minecraft.getInstance().getTextureManager().bind(GUI_SHEET);
 
 
         gui.blit(matrixStack, x, y, 0, 0, width / 2, height / 2, textureXSize, textureYSize);
@@ -22,9 +22,9 @@ public class ScreenBuilder
         gui.blit(matrixStack, x + width / 2, y + height / 2, 150 - width / 2, 150 - height / 2, width / 2, height / 2, textureXSize, textureYSize);
     }
 
-    public void drawPlayerSlots(Screen gui, PoseStack matrixStack, int posX, int posY, boolean center, int textureXSize, int textureYSize)
+    public void drawPlayerSlots(Screen gui, MatrixStack matrixStack, int posX, int posY, boolean center, int textureXSize, int textureYSize)
     {
-        RenderSystem.setShaderTexture(0, GUI_SHEET);
+        net.minecraft.client.Minecraft.getInstance().getTextureManager().bind(GUI_SHEET);
         if (center)
         {
             posX -= 81;
@@ -42,9 +42,9 @@ public class ScreenBuilder
         }
     }
 
-    public void drawSlot(Screen gui, PoseStack matrixStack, int posX, int posY, int textureXSize, int textureYSize)
+    public void drawSlot(Screen gui, MatrixStack matrixStack, int posX, int posY, int textureXSize, int textureYSize)
     {
-        RenderSystem.setShaderTexture(0, GUI_SHEET);
+        net.minecraft.client.Minecraft.getInstance().getTextureManager().bind(GUI_SHEET);
         gui.blit(matrixStack, posX, posY, 150, 0, 18, 18, textureXSize, textureYSize);
     }
 

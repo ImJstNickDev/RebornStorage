@@ -26,6 +26,7 @@ public class PortClientTest {
   private static boolean loading;
   private static int age;
   private static int totalTicks;
+  private static long lastChangeNanos, maxGapNanos;
   private static int previousRemaining, firstProgressTick, lastProgressTick, changes, longestGap;
 
   private static int remainingPlanks(
@@ -152,11 +153,14 @@ public class PortClientTest {
             remainingPlanks(
                 (com.refinedmods.refinedstorage.screen.CraftingMonitorScreen) mc.screen);
         if (remaining > 0 && remaining != previousRemaining) {
+          long now = System.nanoTime();
           if (changes == 0) firstProgressTick = age;
           else {
             check(remaining < previousRemaining, "visible craft count decreases");
+            maxGapNanos = Math.max(maxGapNanos, now - lastChangeNanos);
             longestGap = Math.max(longestGap, age - lastProgressTick);
           }
+          lastChangeNanos = now;
           lastProgressTick = age;
           previousRemaining = remaining;
           changes++;
@@ -172,7 +176,9 @@ public class PortClientTest {
                 + changes
                 + " distinct counts; longest observed gap "
                 + longestGap
-                + " client ticks");
+                + " client ticks, "
+                + (maxGapNanos / 1000000)
+                + " ms");
         mc.player.closeContainer();
         mc.getSingleplayerServer()
             .execute(

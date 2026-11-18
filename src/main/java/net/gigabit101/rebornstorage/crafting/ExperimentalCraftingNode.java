@@ -32,7 +32,7 @@ public final class ExperimentalCraftingNode extends CraftingNode {
   private final List<Integer> amounts = new ArrayList<>();
   private final CompoundNBT initialRequirements;
   private final boolean eligible;
-  private int completed;
+  private int consumedCrafts;
 
   public ExperimentalCraftingNode(INetwork network, CompoundNBT tag)
       throws CraftingTaskReadException {
@@ -112,7 +112,7 @@ public final class ExperimentalCraftingNode extends CraftingNode {
   @Override
   public com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.node.NodeRequirements
       getRequirements() {
-    if (!eligible || completed == 0) return super.getRequirements();
+    if (!eligible || consumedCrafts == 0) return super.getRequirements();
     com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.node.NodeRequirements current =
         new com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.node.NodeRequirements();
     try {
@@ -173,6 +173,8 @@ public final class ExperimentalCraftingNode extends CraftingNode {
           if (extracted.getCount() != amounts.get(j))
             throw new IllegalStateException("Crafting input changed during consumption");
         }
+        // RS consumes requirements before calling recipe and external storage hooks.
+        consumedCrafts++;
         ItemStack output = getPattern().getOutput(recipe);
         if (isRoot()) output = network.insertItem(output, output.getCount(), Action.PERFORM);
         storeOutput(storage, privateDisk, output);
@@ -181,7 +183,6 @@ public final class ExperimentalCraftingNode extends CraftingNode {
         else
           for (ItemStack byproduct : getPattern().getByproducts(recipe))
             storeOutput(storage, privateDisk, byproduct);
-        completed++;
         next();
         listener.onSingleDone(this);
         if (getQuantity() <= 0) {
@@ -210,13 +211,13 @@ public final class ExperimentalCraftingNode extends CraftingNode {
   @Override
   public CompoundNBT writeToNbt() {
     CompoundNBT tag = super.writeToNbt();
-    if (eligible && completed != 0) {
+    if (eligible && consumedCrafts != 0) {
       ListNBT groups = initialRequirements.getList("ItemsToUse", 9).copy();
       int[] perCraft = initialRequirements.getIntArray("ItemsNeededPerCraft");
       for (int i = 0; i < groups.size(); i++) {
         ListNBT variants = groups.getList(i);
         ItemStack stack = StackUtils.deserializeStackFromNbt(variants.getCompound(0));
-        int remaining = stack.getCount() - completed * perCraft[i];
+        int remaining = stack.getCount() - consumedCrafts * perCraft[i];
         variants.clear();
         if (remaining > 0) {
           stack.setCount(remaining);

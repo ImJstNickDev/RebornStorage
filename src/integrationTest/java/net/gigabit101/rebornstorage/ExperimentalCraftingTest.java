@@ -270,6 +270,8 @@ final class ExperimentalCraftingTest {
     partial.putBoolean("Root", true);
     for (int acceptedPerInsert : new int[] {0, 2}) {
       int[] inserted = {0};
+      CraftingNode[] active = new CraftingNode[1];
+      List<CompoundNBT> observed = new ArrayList<>();
       INetwork limited =
           (INetwork)
               java.lang.reflect.Proxy.newProxyInstance(
@@ -277,6 +279,7 @@ final class ExperimentalCraftingTest {
                   new Class<?>[] {INetwork.class},
                   (proxy, method, args) -> {
                     if (method.getName().equals("insertItem")) {
+                      observed.add(active[0].getRequirements().writeToNbt(new CompoundNBT()));
                       ItemStack stack = (ItemStack) args[0];
                       int amount = (Integer) args[1];
                       int accepted = Math.min(amount, acceptedPerInsert);
@@ -288,13 +291,32 @@ final class ExperimentalCraftingTest {
                     return method.invoke(actual, args);
                   });
       ExperimentalCraftingNode node = new ExperimentalCraftingNode(limited, partial);
+      CraftingNode reference = new CraftingNode(limited, partial);
       int crafts = node.getQuantity();
+      ItemStorageDisk baseline = new ItemStorageDisk(null, -1, null);
+      baseline.insert(new ItemStack(Items.OAK_LOG), crafts, Action.PERFORM);
+      active[0] = reference;
+      for (int tick = 1; reference.getQuantity() > 0 && tick < 20; tick++)
+        reference.update(
+            limited,
+            tick,
+            new NodeList(),
+            baseline,
+            new FluidStorageDisk(null, -1, null),
+            new CountingListener());
+      List<CompoundNBT> expected = new ArrayList<>(observed);
+      observed.clear();
+      inserted[0] = 0;
+      active[0] = node;
       ItemStorageDisk storage = TaskStorageFixture.empty();
       storage.insert(new ItemStack(Items.OAK_LOG), crafts, Action.PERFORM);
       CountingListener listener = new CountingListener();
       for (int tick = 1; node.getQuantity() > 0 && tick < 20; tick++)
         node.update(
             limited, tick, new NodeList(), storage, new FluidStorageDisk(null, -1, null), listener);
+      check(
+          expected.size() == crafts && expected.equals(observed),
+          "network insertion observes the same consumed requirements for each craft as RS");
       int retained =
           storage
               .extract(new ItemStack(Items.OAK_PLANKS), Integer.MAX_VALUE, 1, Action.SIMULATE)

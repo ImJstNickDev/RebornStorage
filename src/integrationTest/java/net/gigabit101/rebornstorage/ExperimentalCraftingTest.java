@@ -103,8 +103,7 @@ final class ExperimentalCraftingTest {
               .getRecipe();
     CraftingNode original = new CraftingNode(pattern, false, recipe);
     original.addQuantity(19);
-    ItemStorageDisk a = new ItemStorageDisk(null, -1, null),
-        b = new ItemStorageDisk(null, -1, null);
+    ItemStorageDisk a = new ItemStorageDisk(null, -1, null), b = TaskStorageFixture.empty();
     int ingredient = 0;
     for (ItemStack input : recipe)
       if (!input.isEmpty()) {
@@ -130,7 +129,7 @@ final class ExperimentalCraftingTest {
     check(
         optimized.isOptimized() != variants,
         "fixed variant specialization / mixed variant fallback");
-    CountingListener la = new CountingListener(), lb = new CountingListener();
+    CountingListener la = new CountingListener(a), lb = new CountingListener(b);
     original.update(network, 1, new NodeList(), a, new FluidStorageDisk(null, -1, null), la);
     optimized.update(network, 1, new NodeList(), b, new FluidStorageDisk(null, -1, null), lb);
     check(la.singles == 6 && lb.singles == 6, "same CPU budget and per-craft callbacks");
@@ -152,6 +151,9 @@ final class ExperimentalCraftingTest {
     }
     check(
         vanillaResume.getQuantity() == 0 && optimized.getQuantity() == 0, "both resume and finish");
+    check(
+        la.states.equals(lb.states),
+        "same remaining work, requirements and inventory inside every craft notification");
     check(
         la.singles == 19 && lb.singles == 19 && la.done == 1 && lb.done == 1,
         "exact progress and one completion notification");
@@ -188,9 +190,25 @@ final class ExperimentalCraftingTest {
 
   private static final class CountingListener implements NodeListener {
     int singles, done;
+    final ItemStorageDisk storage;
+    final List<CompoundNBT> states = new ArrayList<>();
+
+    CountingListener() {
+      this(null);
+    }
+
+    CountingListener(ItemStorageDisk storage) {
+      this.storage = storage;
+    }
 
     public void onSingleDone(Node node) {
       singles++;
+      if (storage != null) {
+        CompoundNBT state = node.writeToNbt();
+        state.put("Inventory", storage.writeToNbt());
+        state.putInt("Stored", storage.getStored());
+        states.add(state);
+      }
     }
 
     public void onAllDone(Node node) {
@@ -271,7 +289,7 @@ final class ExperimentalCraftingTest {
                   });
       ExperimentalCraftingNode node = new ExperimentalCraftingNode(limited, partial);
       int crafts = node.getQuantity();
-      ItemStorageDisk storage = new ItemStorageDisk(null, -1, null);
+      ItemStorageDisk storage = TaskStorageFixture.empty();
       storage.insert(new ItemStack(Items.OAK_LOG), crafts, Action.PERFORM);
       CountingListener listener = new CountingListener();
       for (int tick = 1; node.getQuantity() > 0 && tick < 20; tick++)

@@ -20,7 +20,6 @@ import com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.node.NodeList
 import com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.node.NodeListener;
 import com.refinedmods.refinedstorage.apiimpl.autocrafting.task.v6.node.ProcessingNode;
 import com.refinedmods.refinedstorage.apiimpl.storage.disk.factory.FluidStorageDiskFactory;
-import com.refinedmods.refinedstorage.apiimpl.storage.disk.factory.ItemStorageDiskFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -93,8 +92,7 @@ public final class ExperimentalTask implements ICraftingTask, NodeListener {
     this.startTime = tag.getLong(NBT_EXECUTION_STARTED);
     this.totalSteps = tag.getInt(NBT_TOTAL_STEPS);
     this.currentStep = tag.getInt(NBT_CURRENT_STEP);
-    this.internalStorage =
-        new ItemStorageDiskFactory().createFromNbt(null, tag.getCompound(NBT_INTERNAL_STORAGE));
+    this.internalStorage = TaskItemStorage.restore(tag.getCompound(NBT_INTERNAL_STORAGE));
     this.internalFluidStorage =
         new FluidStorageDiskFactory()
             .createFromNbt(null, tag.getCompound(NBT_INTERNAL_FLUID_STORAGE));

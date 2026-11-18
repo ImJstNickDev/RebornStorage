@@ -26,6 +26,29 @@ public class PortClientTest {
   private static boolean loading;
   private static int age;
   private static int totalTicks;
+  private static int previousRemaining, firstProgressTick, lastProgressTick, changes, longestGap;
+
+  private static int remainingPlanks(
+      com.refinedmods.refinedstorage.screen.CraftingMonitorScreen screen) {
+    for (com.refinedmods.refinedstorage.api.autocrafting.craftingmonitor.ICraftingMonitorElement
+        element : screen.getElements()) {
+      if (!(element
+          instanceof
+          com.refinedmods.refinedstorage.apiimpl.autocrafting.craftingmonitor
+              .ItemCraftingMonitorElement)) continue;
+      net.minecraft.network.PacketBuffer buffer =
+          new net.minecraft.network.PacketBuffer(io.netty.buffer.Unpooled.buffer());
+      try {
+        element.write(buffer);
+        ItemStack item = com.refinedmods.refinedstorage.util.StackUtils.readItemStack(buffer);
+        if (item.getItem() == net.minecraft.item.Items.OAK_PLANKS)
+          return buffer.getInt(buffer.writerIndex() - Integer.BYTES);
+      } finally {
+        buffer.release();
+      }
+    }
+    return 0;
+  }
 
   private static void check(boolean ok, String label) {
     if (!ok) throw new AssertionError(label);
@@ -104,7 +127,52 @@ public class PortClientTest {
                       .setMode(p.getMainHandItem(), mode);
                 });
       }
+      if (age == 182) {
+        net.minecraft.server.MinecraftServer server = mc.getSingleplayerServer();
+        server.execute(
+            () -> {
+              net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter tile =
+                  (net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter)
+                      server.overworld().getBlockEntity(new BlockPos(3, 81, 1));
+              com.refinedmods.refinedstorage.api.network.INetwork network =
+                  tile.getNode().getNetwork();
+              network.insertItem(
+                  new ItemStack(net.minecraft.item.Items.OAK_LOG),
+                  3000,
+                  com.refinedmods.refinedstorage.api.util.Action.PERFORM);
+              network
+                  .getCraftingManager()
+                  .request(null, new ItemStack(net.minecraft.item.Items.OAK_PLANKS), 12000);
+            });
+      }
+      if (age >= 185
+          && age < 220
+          && mc.screen instanceof com.refinedmods.refinedstorage.screen.CraftingMonitorScreen) {
+        int remaining =
+            remainingPlanks(
+                (com.refinedmods.refinedstorage.screen.CraftingMonitorScreen) mc.screen);
+        if (remaining > 0 && remaining != previousRemaining) {
+          if (changes == 0) firstProgressTick = age;
+          else {
+            check(remaining < previousRemaining, "visible craft count decreases");
+            longestGap = Math.max(longestGap, age - lastProgressTick);
+          }
+          lastProgressTick = age;
+          previousRemaining = remaining;
+          changes++;
+        }
+      }
       if (age == 220) {
+        check(
+            changes >= 12
+                && firstProgressTick <= 200
+                && age - lastProgressTick < 10
+                && longestGap < 10,
+            "active monitor: "
+                + changes
+                + " distinct counts; longest observed gap "
+                + longestGap
+                + " client ticks");
         mc.player.closeContainer();
         mc.getSingleplayerServer()
             .execute(

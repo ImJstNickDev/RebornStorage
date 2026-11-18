@@ -149,6 +149,9 @@ public final class ExperimentalCraftingNode extends CraftingNode {
       super.update(network, ticks, nodes, storage, fluids, listener);
       return;
     }
+    TaskItemStorage privateDisk =
+        storage instanceof TaskItemStorage ? (TaskItemStorage) storage : null;
+    ItemStack[] matched = privateDisk == null ? null : new ItemStack[ingredients.size()];
     for (ICraftingPatternContainer container :
         network.getCraftingManager().getAllContainers(getPattern())) {
       int interval = container.getUpdateInterval();
@@ -156,22 +159,28 @@ public final class ExperimentalCraftingNode extends CraftingNode {
       if (interval != 0 && ticks % interval != 0) continue;
       for (int i = 0;
           i < container.getMaximumSuccessfulCraftingUpdates()
-              && available((ItemStorageDisk) storage);
+              && (privateDisk == null
+                  ? available((ItemStorageDisk) storage)
+                  : match(privateDisk, matched));
           i++) {
         for (int j = 0; j < ingredients.size(); j++) {
+          if (privateDisk != null) {
+            privateDisk.consume(matched[j], amounts.get(j));
+            continue;
+          }
           ItemStack extracted =
               storage.extract(ingredients.get(j), amounts.get(j), 1, Action.PERFORM);
           if (extracted.getCount() != amounts.get(j))
             throw new IllegalStateException("Crafting input changed during consumption");
         }
         ItemStack output = getPattern().getOutput(recipe);
-        if (!isRoot()) storage.insert(output, output.getCount(), Action.PERFORM);
-        else {
-          ItemStack remainder = network.insertItem(output, output.getCount(), Action.PERFORM);
-          storage.insert(remainder, remainder.getCount(), Action.PERFORM);
-        }
-        for (ItemStack byproduct : getPattern().getByproducts(recipe))
-          storage.insert(byproduct, byproduct.getCount(), Action.PERFORM);
+        if (isRoot()) output = network.insertItem(output, output.getCount(), Action.PERFORM);
+        storeOutput(storage, privateDisk, output);
+        if (privateDisk != null && pattern instanceof ExperimentalPattern)
+          ((ExperimentalPattern) pattern).storeByproducts(recipe, privateDisk);
+        else
+          for (ItemStack byproduct : getPattern().getByproducts(recipe))
+            storeOutput(storage, privateDisk, byproduct);
         completed++;
         next();
         listener.onSingleDone(this);
@@ -181,6 +190,21 @@ public final class ExperimentalCraftingNode extends CraftingNode {
         }
       }
     }
+  }
+
+  private boolean match(TaskItemStorage storage, ItemStack[] matched) {
+    for (int i = 0; i < matched.length; i++) {
+      ItemStack stack = storage.find(ingredients.get(i));
+      if (stack.getCount() < amounts.get(i)) return false;
+      matched[i] = stack;
+    }
+    return true;
+  }
+
+  private static void storeOutput(
+      IStorageDisk<ItemStack> storage, TaskItemStorage privateDisk, ItemStack output) {
+    if (privateDisk != null) privateDisk.addOutput(output);
+    else storage.insert(output, output.getCount(), Action.PERFORM);
   }
 
   @Override

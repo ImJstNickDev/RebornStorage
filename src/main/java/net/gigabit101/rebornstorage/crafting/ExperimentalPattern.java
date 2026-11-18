@@ -99,6 +99,22 @@ public final class ExperimentalPattern extends CraftingPattern {
     }
   }
 
+  /** Consume the actual Forge remainder list in slot order without building a filtered copy. */
+  void storeByproducts(NonNullList<ItemStack> took, TaskItemStorage storage) {
+    Workspace work = workspace.get();
+    if (!reusable || work.busy) {
+      for (ItemStack stack : delegate.getByproducts(took)) storage.addOutput(stack);
+      return;
+    }
+    work.load(took, getInputs().size());
+    try {
+      NonNullList<ItemStack> remaining = recipe.getRemainingItems(work.inventory);
+      for (int i = 0; i < remaining.size(); i++) storage.addOutput(remaining.get(i));
+    } finally {
+      work.clear();
+    }
+  }
+
   private static final class Workspace {
     final RecipeInventory inventory = new RecipeInventory();
     boolean busy;

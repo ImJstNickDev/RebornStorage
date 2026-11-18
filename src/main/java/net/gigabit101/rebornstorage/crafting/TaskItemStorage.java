@@ -20,6 +20,22 @@ import net.minecraft.nbt.CompoundNBT;
 final class TaskItemStorage extends ItemStorageDisk {
   private final Map<Item, List<ItemStack>> buckets = new IdentityHashMap<>();
   private int countDelta;
+  private long revision;
+
+  long revision() {
+    return revision;
+  }
+
+  boolean singleton(ItemStack stack) {
+    return buckets.get(stack.getItem()).size() == 1;
+  }
+
+  static boolean fixedIdentity(ItemStack stack) {
+    // Null dispatcher compatibility means Forge has no serializable capability writers here.
+    return stack.getTag() == null
+        && stack.areCapsCompatible(
+            (net.minecraftforge.common.capabilities.CapabilityDispatcher) null);
+  }
 
   private TaskItemStorage(ItemStorageDisk restored) {
     super(null, -1, restored.getOwner());
@@ -50,18 +66,35 @@ final class TaskItemStorage extends ItemStorageDisk {
   }
 
   void consume(ItemStack matched, int amount) {
-    if (matched.getCount() == amount) getRawStacks().remove(matched.getItem(), matched);
-    else matched.shrink(amount);
+    if (matched.getCount() == amount) {
+      getRawStacks().remove(matched.getItem(), matched);
+      revision++;
+    } else matched.shrink(amount);
     countDelta -= amount;
   }
 
-  void addOutput(ItemStack output) {
-    if (output.isEmpty() || getStored() == getCapacity()) return;
+  boolean growOutput(long expectedRevision, ItemStack destination, ItemStack output) {
+    if (expectedRevision != revision
+        || getStored() == getCapacity()
+        || !API.instance().getComparer().isEqualNoQuantity(destination, output)
+        || expectedRevision != revision) return false;
+    int amount = output.getCount();
+    destination.grow(amount);
+    countDelta += amount;
+    return true;
+  }
+
+  ItemStack addOutput(ItemStack output) {
+    if (output.isEmpty() || getStored() == getCapacity()) return ItemStack.EMPTY;
     int amount = output.getCount();
     ItemStack existing = find(output);
-    if (existing.isEmpty()) getRawStacks().put(output.getItem(), output.copy());
-    else existing.grow(amount);
+    if (existing.isEmpty()) {
+      existing = output.copy();
+      getRawStacks().put(output.getItem(), existing);
+      revision++;
+    } else existing.grow(amount);
     countDelta += amount;
+    return existing;
   }
 
   private void synchronizeCount() {
@@ -78,12 +111,14 @@ final class TaskItemStorage extends ItemStorageDisk {
 
   @Override
   public ItemStack insert(ItemStack stack, int size, Action action) {
+    if (action == Action.PERFORM) revision++;
     synchronizeCount();
     return super.insert(stack, size, action);
   }
 
   @Override
   public ItemStack extract(ItemStack stack, int size, int flags, Action action) {
+    if (action == Action.PERFORM) revision++;
     synchronizeCount();
     return super.extract(stack, size, flags, action);
   }

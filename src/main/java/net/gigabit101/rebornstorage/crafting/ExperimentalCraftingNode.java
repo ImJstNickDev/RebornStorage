@@ -33,6 +33,13 @@ public final class ExperimentalCraftingNode extends CraftingNode {
   private final CompoundNBT initialRequirements;
   private final boolean eligible;
   private int consumedCrafts;
+  private final ItemStack fixedResult;
+  private final ItemStack[] fixedInputs;
+  private final int[] fixedAmounts;
+
+  public boolean hasIntermediatePlan() {
+    return fixedResult != null;
+  }
 
   public ExperimentalCraftingNode(INetwork network, CompoundNBT tag)
       throws CraftingTaskReadException {
@@ -62,6 +69,13 @@ public final class ExperimentalCraftingNode extends CraftingNode {
     pattern = ours ? ExperimentalPattern.wrap(super.getPattern(), true) : super.getPattern();
     initialRequirements = tag.copy();
     eligible = ours && compile(tag);
+    fixedResult =
+        eligible && !isRoot() && pattern instanceof ExperimentalPattern
+            ? ((ExperimentalPattern) pattern).fixedIntermediate(recipe)
+            : null;
+    fixedInputs = fixedResult == null ? null : ingredients.toArray(new ItemStack[0]);
+    fixedAmounts =
+        fixedResult == null ? null : amounts.stream().mapToInt(Integer::intValue).toArray();
   }
 
   private static NonNullList<ItemStack> readRecipe(CompoundNBT tag) {
@@ -157,6 +171,11 @@ public final class ExperimentalCraftingNode extends CraftingNode {
       int interval = container.getUpdateInterval();
       if (interval < 0) throw new IllegalStateException("Negative crafting interval");
       if (interval != 0 && ticks % interval != 0) continue;
+      if (privateDisk != null && fixedResult != null) {
+        runIntermediate(privateDisk, matched, container, listener);
+        if (getQuantity() <= 0) return;
+        continue;
+      }
       for (int i = 0;
           i < container.getMaximumSuccessfulCraftingUpdates()
               && (privateDisk == null
@@ -191,6 +210,56 @@ public final class ExperimentalCraftingNode extends CraftingNode {
         }
       }
     }
+  }
+
+  private void runIntermediate(
+      TaskItemStorage disk,
+      ItemStack[] matched,
+      ICraftingPatternContainer container,
+      NodeListener listener) {
+    long boundRevision = -1, outputRevision = -1;
+    boolean allowBinding = true;
+    ItemStack destination = ItemStack.EMPTY;
+    for (int i = 0; i < container.getMaximumSuccessfulCraftingUpdates(); i++) {
+      if (boundRevision != disk.revision() || !stillAvailable(matched)) {
+        if (!match(disk, matched)) return;
+        for (int j = 0; allowBinding && j < matched.length; j++) {
+          if (!disk.singleton(matched[j])
+              || !TaskItemStorage.fixedIdentity(matched[j])
+              || !TaskItemStorage.fixedIdentity(fixedInputs[j])) {
+            allowBinding = false;
+            break;
+          }
+        }
+        boundRevision = allowBinding ? disk.revision() : -1;
+      }
+      for (int j = 0; j < matched.length; j++) disk.consume(matched[j], fixedAmounts[j]);
+      consumedCrafts++;
+      ItemStack output = fixedResult.copy();
+      if (output.isEmpty()) throw new IllegalStateException("Cannot have empty result");
+      if (!disk.growOutput(outputRevision, destination, output)) {
+        destination = disk.addOutput(output);
+        outputRevision =
+            !destination.isEmpty() && disk.singleton(destination) ? disk.revision() : -1;
+      }
+      next();
+      listener.onSingleDone(this);
+      if (getQuantity() <= 0) {
+        listener.onAllDone(this);
+        return;
+      }
+    }
+  }
+
+  private boolean stillAvailable(ItemStack[] matched) {
+    for (int i = 0; i < matched.length; i++) {
+      ItemStack stack = matched[i];
+      if (stack.getCount() < fixedAmounts[i]
+          || stack.getTag() != null
+          || fixedInputs[i].getTag() != null
+          || stack.getItem() != fixedInputs[i].getItem()) return false;
+    }
+    return true;
   }
 
   private boolean match(TaskItemStorage storage, ItemStack[] matched) {

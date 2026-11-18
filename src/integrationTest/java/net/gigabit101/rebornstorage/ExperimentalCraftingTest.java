@@ -129,6 +129,20 @@ final class ExperimentalCraftingTest {
     check(
         optimized.isOptimized() != variants,
         "fixed variant specialization / mixed variant fallback");
+    check(
+        optimized.hasIntermediatePlan() == (!tagged && !variants && output != Items.CAKE),
+        "only fixed plain intermediate recipes skip remainder evaluation");
+    if (output == Items.OAK_PLANKS && !variants && !tagged) {
+      externalStorage(network, original.writeToNbt());
+      reentrantInputs(network, original.writeToNbt(), false);
+      CapabilityProbe caps = new CapabilityProbe();
+      net.minecraftforge.common.MinecraftForge.EVENT_BUS.register(caps);
+      try {
+        reentrantInputs(network, original.writeToNbt(), true);
+      } finally {
+        net.minecraftforge.common.MinecraftForge.EVENT_BUS.unregister(caps);
+      }
+    }
     CountingListener la = new CountingListener(a), lb = new CountingListener(b);
     original.update(network, 1, new NodeList(), a, new FluidStorageDisk(null, -1, null), la);
     optimized.update(network, 1, new NodeList(), b, new FluidStorageDisk(null, -1, null), lb);
@@ -178,6 +192,128 @@ final class ExperimentalCraftingTest {
     }
   }
 
+  private static void externalStorage(INetwork network, CompoundNBT tag) throws Exception {
+    tag.putBoolean("Root", true);
+    net.minecraftforge.items.ItemStackHandler handler =
+        new net.minecraftforge.items.ItemStackHandler(1) {
+          @Override
+          public int getSlotLimit(int slot) {
+            return 2;
+          }
+        };
+    com.refinedmods.refinedstorage.api.storage.externalstorage.IExternalStorageContext context =
+        new com.refinedmods.refinedstorage.api.storage.externalstorage.IExternalStorageContext() {
+          public int getPriority() {
+            return 0;
+          }
+
+          public com.refinedmods.refinedstorage.api.storage.AccessType getAccessType() {
+            return com.refinedmods.refinedstorage.api.storage.AccessType.INSERT;
+          }
+
+          public boolean acceptsItem(ItemStack stack) {
+            return true;
+          }
+
+          public boolean acceptsFluid(net.minecraftforge.fluids.FluidStack stack) {
+            return false;
+          }
+        };
+    List<com.refinedmods.refinedstorage.api.storage.IStorage<ItemStack>> targets =
+        network.getItemStorageCache().getStorages();
+    List<com.refinedmods.refinedstorage.api.storage.IStorage<ItemStack>> saved =
+        new ArrayList<>(targets);
+    try {
+      targets.clear();
+      targets.add(
+          new com.refinedmods.refinedstorage.apiimpl.storage.externalstorage.ItemExternalStorage(
+              context, () -> handler, false));
+      ExperimentalCraftingNode node = new ExperimentalCraftingNode(network, tag);
+      ItemStorageDisk disk = TaskStorageFixture.empty();
+      disk.insert(new ItemStack(Items.OAK_LOG), 19, Action.PERFORM);
+      CountingListener listener = new CountingListener();
+      node.update(network, 1, new NodeList(), disk, new FluidStorageDisk(null, -1, null), listener);
+      check(
+          listener.singles == 6
+              && handler.getStackInSlot(0).getCount() == 2
+              && disk.extract(new ItemStack(Items.OAK_PLANKS), 100, 1, Action.SIMULATE).getCount()
+                  == 22,
+          "real RS external storage accepts two items and all subsequent remainders stay in the"
+              + " task");
+    } finally {
+      targets.clear();
+      targets.addAll(saved);
+    }
+  }
+
+  // One server-side listener invalidates an input after the first committed craft.
+  // The next iteration must see the replacement or capability change synchronously.
+  private static void reentrantInputs(INetwork network, CompoundNBT seed, boolean capability)
+      throws Exception {
+    for (boolean fast : new boolean[] {false, true}) {
+      CraftingNode node =
+          fast ? new ExperimentalCraftingNode(network, seed) : new CraftingNode(network, seed);
+      ItemStorageDisk disk =
+          fast ? TaskStorageFixture.empty() : new ItemStorageDisk(null, -1, null);
+      ItemStack input = new ItemStack(Items.OAK_LOG);
+      disk.insert(input, 19, Action.PERFORM);
+      CountingListener listener =
+          new CountingListener() {
+            @Override
+            public void onSingleDone(Node n) {
+              super.onSingleDone(n);
+              if (singles != 1) return;
+              ItemStack stored = disk.getRawStacks().get(Items.OAK_LOG).iterator().next();
+              if (capability) {
+                // Initialize the Forge dispatcher, then change only its serialized state.
+                stored.areCapsCompatible(input);
+                CapabilityProbe.data.get(stored).putInt("phase", 1);
+                check(stored.getTag() == null, "variant differs by capability only");
+              } else {
+                int count = disk.extract(input, 19, 1, Action.PERFORM).getCount();
+                ItemStack replacement = input.copy();
+                replacement.getOrCreateTag().putString("variant", "listener");
+                disk.insert(replacement, count, Action.PERFORM);
+              }
+            }
+          };
+      node.update(network, 1, new NodeList(), disk, new FluidStorageDisk(null, -1, null), listener);
+      check(
+          listener.singles == 1 && node.getQuantity() == 18 && disk.getStored() == 22,
+          "listener mutation stalls next craft; caps=" + capability + ", optimized=" + fast);
+    }
+    CapabilityProbe.data.clear();
+  }
+
+  public static final class CapabilityProbe {
+    static final IdentityHashMap<ItemStack, CompoundNBT> data = new IdentityHashMap<>();
+
+    @net.minecraftforge.eventbus.api.SubscribeEvent
+    public void attach(net.minecraftforge.event.AttachCapabilitiesEvent<ItemStack> event) {
+      ItemStack stack = event.getObject();
+      if (stack.getItem() != Items.OAK_LOG) return;
+      CompoundNBT state = new CompoundNBT();
+      data.put(stack, state);
+      event.addCapability(
+          new net.minecraft.util.ResourceLocation("rebornstorage", "comparison_probe"),
+          new net.minecraftforge.common.capabilities.ICapabilitySerializable<CompoundNBT>() {
+            public CompoundNBT serializeNBT() {
+              return state.copy();
+            }
+
+            public void deserializeNBT(CompoundNBT tag) {
+              state.merge(tag);
+            }
+
+            public <T> net.minecraftforge.common.util.LazyOptional<T> getCapability(
+                net.minecraftforge.common.capabilities.Capability<T> cap,
+                net.minecraft.util.Direction side) {
+              return net.minecraftforge.common.util.LazyOptional.empty();
+            }
+          });
+    }
+  }
+
   private static void equal(ItemStorageDisk a, ItemStorageDisk b) {
     check(
         a.getStored() == b.getStored() && a.getStacks().size() == b.getStacks().size(),
@@ -188,7 +324,7 @@ final class ExperimentalCraftingTest {
           "same item/NBT counts including intermediate items and remainders");
   }
 
-  private static final class CountingListener implements NodeListener {
+  private static class CountingListener implements NodeListener {
     int singles, done;
     final ItemStorageDisk storage;
     final List<CompoundNBT> states = new ArrayList<>();

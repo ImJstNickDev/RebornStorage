@@ -39,6 +39,15 @@ public final class ExperimentalTask implements ICraftingTask, NodeListener {
         .count();
   }
 
+  public long getIntermediatePlanCount() {
+    return nodes.all().stream()
+        .filter(
+            n ->
+                n instanceof ExperimentalCraftingNode
+                    && ((ExperimentalCraftingNode) n).hasIntermediatePlan())
+        .count();
+  }
+
   private static final String NBT_REQUESTED = "Requested";
   private static final String NBT_QUANTITY = "Quantity";
   private static final String NBT_PATTERN = "Pattern";

@@ -64,6 +64,25 @@ public final class ExperimentalPattern extends CraftingPattern {
                 || recipe.getClass() == ShapelessRecipe.class);
   }
 
+  /**
+   * Exact vanilla shaped/shapeless assemble copies this stack. Base Item and BlockItem use Forge's
+   * default container check, backed by Item's final craftingRemainingItem. Subclasses (including
+   * modded items), tagged inputs and container items stay on RS's path.
+   */
+  ItemStack fixedIntermediate(NonNullList<ItemStack> inputs) {
+    if (!reusable || inputs.size() != getInputs().size()) return null;
+    for (ItemStack input : inputs) {
+      if (input.isEmpty()) continue;
+      Class<?> type = input.getItem().getClass();
+      if ((type != net.minecraft.item.Item.class && type != net.minecraft.item.BlockItem.class)
+          || input.getTag() != null
+          || input.hasContainerItem()) return null;
+    }
+    ItemStack template = recipe.getResultItem();
+    // Read the live result object. The caller copies it for every craft, including Forge caps.
+    return template.isEmpty() ? null : template;
+  }
+
   @Override
   public ResourceLocation getCraftingTaskFactoryId() {
     return task ? ExperimentalTaskFactory.ID : delegate.getCraftingTaskFactoryId();

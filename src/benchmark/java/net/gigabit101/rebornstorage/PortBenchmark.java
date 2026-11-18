@@ -506,6 +506,13 @@ public class PortBenchmark {
         check(
             optimized == (workload == 0 ? 1 : 5),
             "Expected all benchmark recipe nodes to use optimized requirements");
+        long plans =
+            ((net.gigabit101.rebornstorage.crafting.ExperimentalTask) calc.getTask())
+                .getIntermediatePlanCount();
+        check(
+            plans == (workload == 0 ? 0 : 4),
+            "Expected all four nested intermediates to use guarded plans, got " + plans);
+        result.put("verified_intermediate_plans_" + (workload == 0 ? "simple" : "nested"), plans);
         result.put("verified_optimized_nodes_" + (workload == 0 ? "simple" : "nested"), optimized);
       }
       network.getCraftingManager().start(calc.getTask());

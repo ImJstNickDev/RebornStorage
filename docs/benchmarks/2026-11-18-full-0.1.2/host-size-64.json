@@ -1,0 +1,23 @@
+{
+  "sizes": [
+    64
+  ],
+  "ticks": 240,
+  "repeats": 3,
+  "heap": "6G",
+  "controller_capacity_override": 2000000,
+  "jfr": false,
+  "benchmark_properties": [
+    "bench.maxWindowSeconds=240",
+    "bench.maxWarmupSeconds=120"
+  ],
+  "source_commit": "4de54ad31df87763e295e29161d0347db0efc4db",
+  "date": "2026-11-18T09:11:03.724819+01:00",
+  "cpu": "Intel(R) Core(TM) Ultra 9 275HX",
+  "logical_cpus": 24,
+  "initial_load": [
+    3.16796875,
+    3.1953125,
+    3.00341796875
+  ]
+}

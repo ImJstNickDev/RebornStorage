@@ -67,11 +67,14 @@ The server suite runs twice, including a real save/restart. The client suite use
 
 ## Performance measurements
 
-The [0.1.0 baseline](docs/benchmarks/2026-11-18/README.md) and [0.1.1 comparison](docs/benchmarks/2026-11-18-aggregate/README.md) measure solid 4³, 8³, 16³ and 32³ structures at idle and during continuous simple and nested crafting. They include raw results, tick timings, memory, startup costs and the [diagnosis and proposed remedies](docs/benchmarks/2026-11-18/ANALYSIS.md). The 64³ run was cancelled before launch. These are isolated dedicated-server tests, not a full Cuboid Outpost world.
+The [complete 0.1.2 campaign](docs/benchmarks/2026-11-18-full-0.1.2/README.md) measures solid **4³, 8³, 16³, 32³ and 64³** structures at idle and during continuous simple and nested crafting. It includes raw results, tick timings, memory, startup costs and a comparison with 0.1.1. These are isolated dedicated-server tests, not a full Cuboid Outpost world.
+
+The [0.1.0 baseline](docs/benchmarks/2026-11-18/README.md), [0.1.1 comparison](docs/benchmarks/2026-11-18-aggregate/README.md) and [original diagnosis](docs/benchmarks/2026-11-18/ANALYSIS.md) retain their historical scope through 32³. The previously excluded 64³ was explicitly requested and measured in the 0.1.2 campaign.
 
 ```sh
 python3 scripts/benchmark_port.py --sizes 4 8 16 --tag local-benchmark
 python3 scripts/benchmark_port.py --sizes 32 --controller-capacity 2000000 --tag local-benchmark-32
+python3 scripts/benchmark_port.py --sizes 64 --controller-capacity 2000000 --property bench.maxWindowSeconds=240 --property bench.maxWarmupSeconds=120 --tag local-benchmark-64
 ```
 
 RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The comparison uses matching workloads and controller capacities for both versions; the full modpack has not been benchmarked. Benchmark sources are excluded from the release JAR.

@@ -117,10 +117,12 @@ The targeted dependency set is tested; the full Cuboid Outpost pack is not.
 Client GUI testing uses an integrated server, while the separate dedicated-server
 suite uses simulated players. A full multiplayer session, forced chunk
 unload/reload and long-running production workloads remain manual validation.
-Short dedicated-server throughput tests, including nested crafting and large
-structures, are documented in the [0.1.0 baseline](benchmarks/2026-11-18/README.md)
-and [0.1.1 comparison](benchmarks/2026-11-18-aggregate/README.md). The latter measures
-the four optimizations against identical workloads and controller capacities.
+Dedicated-server throughput tests, including nested crafting and solid structures
+from 4³ through 64³, are documented in the [complete 0.1.2 campaign](benchmarks/2026-11-18-full-0.1.2/README.md).
+The [0.1.0 baseline](benchmarks/2026-11-18/README.md) and
+[0.1.1 comparison](benchmarks/2026-11-18-aggregate/README.md) preserve the earlier
+measurements through 32³. The latest campaign repeats those workloads and
+controller capacities and adds the explicitly requested 64³ case.
 Curios equipment/keybinding interaction was not exercised by
 the automated screen suite. There is no supported save migration from other
 Minecraft versions or upstream Reborn disk IDs. RS's numeric and performance

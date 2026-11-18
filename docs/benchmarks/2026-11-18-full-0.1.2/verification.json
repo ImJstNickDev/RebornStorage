@@ -1,0 +1,86 @@
+{
+  "release": "1.16.5-0.1.2",
+  "production_commit": "2d4e01f",
+  "benchmark_commit": "4de54ad",
+  "jar_sha256": "ef9bf7f12b3ff89fd787c2df84c2415e7da990a94311a091fc0da38905bc45f3",
+  "active_windows": 30,
+  "active_ticks": 7200,
+  "size64_launched": true,
+  "cases": [
+    {
+      "size": 4,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "all_complete": true,
+      "all_positive_output": true,
+      "exit_code": 0,
+      "network_nodes": 3,
+      "persistent_nodes": 2,
+      "providers": 1,
+      "window_limits_seconds": [
+        60,
+        15
+      ]
+    },
+    {
+      "size": 8,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "all_complete": true,
+      "all_positive_output": true,
+      "exit_code": 0,
+      "network_nodes": 3,
+      "persistent_nodes": 2,
+      "providers": 1,
+      "window_limits_seconds": [
+        60,
+        15
+      ]
+    },
+    {
+      "size": 16,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "all_complete": true,
+      "all_positive_output": true,
+      "exit_code": 0,
+      "network_nodes": 3,
+      "persistent_nodes": 2,
+      "providers": 1,
+      "window_limits_seconds": [
+        60,
+        15
+      ]
+    },
+    {
+      "size": 32,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "all_complete": true,
+      "all_positive_output": true,
+      "exit_code": 0,
+      "network_nodes": 3,
+      "persistent_nodes": 2,
+      "providers": 1,
+      "window_limits_seconds": [
+        60,
+        15
+      ]
+    },
+    {
+      "size": 64,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "all_complete": true,
+      "all_positive_output": true,
+      "exit_code": 0,
+      "network_nodes": 3,
+      "persistent_nodes": 2,
+      "providers": 1,
+      "window_limits_seconds": [
+        240,
+        120
+      ]
+    }
+  ]
+}

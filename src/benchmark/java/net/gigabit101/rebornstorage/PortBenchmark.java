@@ -44,6 +44,8 @@ public class PortBenchmark {
   static final int SIZE = Integer.getInteger("bench.size", 4);
   static final int WINDOW = Integer.getInteger("bench.ticks", 240);
   static final int REPEATS = Integer.getInteger("bench.repeats", 3);
+  static final int MAX_WINDOW_SECONDS = Integer.getInteger("bench.maxWindowSeconds", 60);
+  static final int MAX_WARMUP_SECONDS = Integer.getInteger("bench.maxWarmupSeconds", 15);
   static final int CONCURRENT = Integer.getInteger("bench.concurrent", 1);
   static final boolean COUNT_LISTENERS = Boolean.getBoolean("bench.countListeners");
   static long monitorChanges, gridChanges, monitorStarted, gridStarted;
@@ -121,7 +123,10 @@ public class PortBenchmark {
     result.put("blocks", SIZE * SIZE * SIZE);
     result.put("cpus", CPUS);
     result.put("storage_blocks", 1);
+    check(MAX_WINDOW_SECONDS > 0 && MAX_WARMUP_SECONDS > 0, "Positive phase timeouts required");
     result.put("window_ticks", WINDOW);
+    result.put("max_window_seconds", MAX_WINDOW_SECONDS);
+    result.put("max_warmup_seconds", MAX_WARMUP_SECONDS);
     result.put("repeats", REPEATS);
     result.put("java", System.getProperty("java.version"));
     result.put("max_heap_bytes", Runtime.getRuntime().maxMemory());
@@ -279,7 +284,8 @@ public class PortBenchmark {
       }
       if (phase.equals("craft_warmup")) {
         keepBusy();
-        if (phaseTicks >= 100 || System.nanoTime() - phaseStarted > 15_000_000_000L) {
+        if (phaseTicks >= 100
+            || System.nanoTime() - phaseStarted > MAX_WARMUP_SECONDS * 1_000_000_000L) {
           clearOutput();
           beginMeasure(workload == 0 ? "simple" : "nested", ++round);
         }
@@ -287,7 +293,8 @@ public class PortBenchmark {
       }
       if (phase.equals("simple") || phase.equals("nested")) {
         keepBusy();
-        if (phaseTicks >= WINDOW || System.nanoTime() - phaseStarted > 60_000_000_000L) {
+        if (phaseTicks >= WINDOW
+            || System.nanoTime() - phaseStarted > MAX_WINDOW_SECONDS * 1_000_000_000L) {
           endMeasure(outputItem());
           if (round < REPEATS) {
             clearOutput();
@@ -395,6 +402,8 @@ public class PortBenchmark {
     m.put("phase", phase);
     m.put("repeat", round);
     m.put("ticks", phaseTicks);
+    m.put("window_complete", phaseTicks >= WINDOW);
+    m.put("window_stop_reason", phaseTicks >= WINDOW ? "tick_target" : "wall_time_limit");
     m.put("seconds", seconds);
     m.put("observed_tps", phaseTicks / seconds);
     m.put("tick_ms_samples", new ArrayList<>(tickMs));

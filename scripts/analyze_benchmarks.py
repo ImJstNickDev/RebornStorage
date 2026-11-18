@@ -155,7 +155,7 @@ for size, folder in sorted(folders.items()):
 for name, data in [("summary.csv", rows), ("rounds.csv", runs)]:
     keys = list(dict.fromkeys(k for row in data for k in row))
     with (a.output / name).open("w") as f:
-        w = csv.DictWriter(f, fieldnames=keys)
+        w = csv.DictWriter(f, fieldnames=keys, lineterminator="\n")
         w.writeheader()
         w.writerows(data)
 (a.output / "host.json").write_text(json.dumps(host, indent=2) + "\n")
@@ -236,3 +236,7 @@ if a.plot:
     fig.suptitle(title, fontsize=14)
     fig.savefig(a.output / "performance.png", dpi=180)
     fig.savefig(a.output / "performance.svg")
+    svg = a.output / "performance.svg"
+    svg.write_text(
+        "\n".join(line.rstrip() for line in svg.read_text().splitlines()) + "\n"
+    )

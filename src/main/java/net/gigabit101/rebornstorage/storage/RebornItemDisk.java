@@ -3,6 +3,7 @@ package net.gigabit101.rebornstorage.storage;
 import com.google.common.collect.ListMultimap;
 import com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskContainerContext;
 import com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskListener;
+import com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskManager;
 import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import com.refinedmods.refinedstorage.apiimpl.storage.disk.ItemStorageDisk;
@@ -21,7 +22,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 final class RebornItemDisk extends ItemStorageDisk {
   private final ServerWorld world;
   private IStorageDiskListener listener;
-  private com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskManager manager;
+  private IStorageDiskManager manager;
   private Item lastItem;
   private List<ItemStack> lastVariants;
   private int stored;
@@ -99,6 +100,10 @@ final class RebornItemDisk extends ItemStorageDisk {
         }
       }
     }
+    return insertOther(input, size, action);
+  }
+
+  private ItemStack insertOther(ItemStack input, int size, Action action) {
     // A capability comparison or stack copy can call back into this disk.
     // A persistent conflict leaves the input available to the next storage.
     for (int attempt = 0; attempt < 2; attempt++) {
@@ -115,20 +120,21 @@ final class RebornItemDisk extends ItemStorageDisk {
         }
       }
       if (start != changes) continue;
-      ItemStack remainder =
-          accepted == size
-              ? ItemStack.EMPTY
-              : ItemHandlerHelper.copyStackWithSize(
-                  match.isEmpty() ? input : match, size - accepted);
-      if (start != changes) continue;
-      if (action == Action.SIMULATE) return remainder;
-      ItemStack added =
-          match.isEmpty() ? ItemHandlerHelper.copyStackWithSize(input, accepted) : ItemStack.EMPTY;
-      if (start != changes) continue;
-      if (match.isEmpty()) entries.add(added);
-      else match.grow(accepted);
-      changed(accepted);
-      return remainder;
+      ItemStack remainderSource = match.isEmpty() ? input : match;
+      if (action == Action.PERFORM) {
+        if (match.isEmpty()) {
+          ItemStack added = ItemHandlerHelper.copyStackWithSize(input, accepted);
+          if (start != changes) continue;
+          entries.add(added);
+        } else {
+          match.grow(accepted);
+        }
+        changed(accepted);
+      }
+      // RS copies a partial remainder after the disk listener has observed the write.
+      return accepted == size
+          ? ItemStack.EMPTY
+          : ItemHandlerHelper.copyStackWithSize(remainderSource, size - accepted);
     }
     return ItemHandlerHelper.copyStackWithSize(input, size);
   }
@@ -144,14 +150,13 @@ final class RebornItemDisk extends ItemStorageDisk {
         if (!API.instance().getComparer().isEqual(candidate, query, flags)) continue;
         if (start != changes) break;
         int taken = Math.min(size, candidate.getCount());
-        ItemStack result = ItemHandlerHelper.copyStackWithSize(candidate, taken);
-        if (start != changes) break;
+
         if (action == Action.PERFORM) {
           if (taken == candidate.getCount()) entries.remove(i);
           else candidate.shrink(taken);
           changed(-taken);
         }
-        return result;
+        return ItemHandlerHelper.copyStackWithSize(candidate, taken);
       }
       if (start == changes) break;
     }

@@ -822,6 +822,24 @@ public class PortIntegrationTest {
             && disk.getStored() == 0
             && callbacks[0] == 5,
         "final tagged extraction empties disk");
+    disk.insert(original, disk.getCapacity() - 1, Action.PERFORM);
+    disk.setSettings(
+        () -> disk.getStacks().iterator().next().getOrCreateTag().putString("hook", "partial"),
+        () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
+    ItemStack remainder = disk.insert(original, 2, Action.PERFORM);
+    check(
+        remainder.getCount() == 1 && remainder.getTag().getString("hook").equals("partial"),
+        "partial remainder observes the committed disk listener");
+    disk.setSettings(
+        () -> disk.getStacks().iterator().next().getOrCreateTag().putString("hook", "extract"),
+        () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
+    ItemStack taken = disk.extract(original, 1, 0, Action.PERFORM);
+    check(
+        taken.getTag().getString("hook").equals("extract"),
+        "extracted stack observes the committed disk listener");
+    disk.setSettings(
+        null, () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
+    disk.extract(original, Integer.MAX_VALUE, 0, Action.PERFORM);
     disk.setSettings(
         () -> {}, () -> com.refinedmods.refinedstorage.api.storage.AccessType.INSERT_EXTRACT);
   }

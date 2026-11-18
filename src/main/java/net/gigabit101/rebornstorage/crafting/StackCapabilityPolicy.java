@@ -32,8 +32,18 @@ final class StackCapabilityPolicy {
   private final Field filter, handler;
   private final MethodHandle dispatcher, lazyData;
   private Class<?> curiosHandler, curiosWrapper, curioItem;
-  private volatile IEventListener[] approved;
-  private volatile IEventListener[] rejected;
+
+  private static final class Inspection {
+    final IEventListener[] listeners;
+    final boolean plain;
+
+    Inspection(IEventListener[] listeners, boolean plain) {
+      this.listeners = listeners;
+      this.plain = plain;
+    }
+  }
+
+  private volatile Inspection latest;
 
   private StackCapabilityPolicy() throws ReflectiveOperationException {
     dispatcher = capField("capabilities");
@@ -44,7 +54,8 @@ final class StackCapabilityPolicy {
     handler = field(ASMEventHandler.class, "handler");
     if (ModList.get()
         .getModContainerById("curios")
-        .map(mod -> mod.getModInfo().getVersion().toString().equals("1.16.5-4.0.8.2"))
+        .map(mod -> mod.getModInfo().getVersion().toString())
+        .map(version -> version.equals("1.16.5-4.0.8.2") || version.equals("1.16.5-4.0.8.0"))
         .orElse(false)) {
       curiosHandler = Class.forName("top.theillusivec4.curios.common.event.CuriosEventHandler");
       curioItem = Class.forName("top.theillusivec4.curios.api.type.capability.ICurioItem");
@@ -101,14 +112,12 @@ final class StackCapabilityPolicy {
     // EventBus 4 publishes a new dispatch array on registration or removal, including parent
     // listeners.
     IEventListener[] current = INSTANCE.listeners.getListeners(INSTANCE.bus);
-    if (current == INSTANCE.approved) return true;
-    if (current == INSTANCE.rejected) return false;
-    if (INSTANCE.inspect(current)) {
-      INSTANCE.approved = current;
-      return true;
+    Inspection known = INSTANCE.latest;
+    if (known == null || current != known.listeners) {
+      known = new Inspection(current, INSTANCE.inspect(current));
+      INSTANCE.latest = known;
     }
-    INSTANCE.rejected = current;
-    return false;
+    return known.plain;
   }
 
   private boolean inspect(IEventListener[] current) {

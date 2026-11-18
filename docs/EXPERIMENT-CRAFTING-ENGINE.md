@@ -2,7 +2,7 @@
 
 Branch: `experiment/crafting-engine-1.16.5`, based on stable `00928a2`.
 The user requires explicit authorization before merging into `port/forge-1.16.5`.
-Experimental artifact: `rebornstorage-1.16.5-0.1.3-experimental.1.jar`.
+Experimental artifact: `rebornstorage-1.16.5-0.1.3-experimental.2.jar`.
 
 ## Three comparable modes
 
@@ -15,9 +15,11 @@ restart after changing it:
   execute; dynamic/subclassed/custom recipes use the original implementation.
 - `TASK`: PATTERN plus a dedicated task factory for orders rooted in our patterns.
   Fixed-variant ingredient plans are compiled once. Availability checks read
-  the task's internal RS item store without copying stacks; actual extraction
-  still uses RS. Duplicate ingredient requirements are combined. Multi-variant
-  requirements and processing nodes use the ordinary RS node path.
+  the task's private unlimited inventory. The executor matches all fixed inputs
+  before consuming them in place. Each craft updates its real inventory and
+  remaining work before notifying RS. Final output uses the normal RS network
+  insertion on every craft. Duplicate ingredient requirements are combined.
+  Multi-variant requirements and processing nodes use the ordinary RS node path.
 
 Tests can override the configuration with `-Dreborn.craftingExperiment=OFF`,
 `PATTERN` or `TASK`. This is an opt-in experiment; the Prism pack is not changed.
@@ -70,7 +72,7 @@ that fixture setup, a world whose spawn is away from the origin can leave the
 controller stopped; this was caught by the wireless test before any crafting.
 
 Performance runs compare the three modes in separate JVMs with equal sizes,
-inputs, CPU budgets and controller capacities. The
+inputs, CPU budgets and controller capacities. The first prototype’s
 [completed campaign](benchmarks/2026-11-18-experiment/README.md) contains
 42 complete crafting windows and 10,080 active ticks. At 32³, PATTERN reduces
 simple/nested tick time by 6.1%/8.7%; PATTERN plus TASK reduces it by
@@ -84,3 +86,10 @@ the saved 4,000-plank order on dedicated Forge. The report records the scope
 and remaining limitations; this does not establish full-modpack, mixed
 processing-machine or long-running multiplayer compatibility. No merge has
 been performed or authorized.
+
+
+The [experimental.2 measurements](benchmarks/2026-11-18-experiment/LIVE-MONITOR.md)
+include a monitor encoding one snapshot per changed tick and a real client
+reading a decreasing count from the open RS screen. Each RS change notification
+sees the individual craft already committed. External storage handling the
+output can also read the already-consumed requirements before that notification.

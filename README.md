@@ -1,9 +1,10 @@
 # Reborn Storage — Forge 1.16.5 backport
 
 This branch contains the [opt-in crafting engine experiment](docs/EXPERIMENT-CRAFTING-ENGINE.md),
-version `1.16.5-0.1.3-experimental.1`. It has not been approved for merge.
-The [completed comparison](docs/benchmarks/2026-11-18-experiment/README.md)
+version `1.16.5-0.1.3-experimental.2`. It has not been approved for merge.
+The [first experimental comparison](docs/benchmarks/2026-11-18-experiment/README.md)
 records a roughly 45% reduction in active tick time at 32³ with both paths enabled.
+The [live monitor tests](docs/benchmarks/2026-11-18-experiment/LIVE-MONITOR.md) cover per-craft notifications, client update cadence and the private inventory introduced in experimental.2.
 The stable 0.1.2 implementation remains on `port/forge-1.16.5`; the notes below
 describe that baseline unless the experiment is explicitly enabled.
 
@@ -57,7 +58,7 @@ Install JDK 17 for Gradle and JDK 8 for Minecraft development runs. Set `JAVA_HO
 ./gradlew build
 ```
 
-Dependencies are version-pinned in `build.gradle` and downloaded from Forge Maven, Curse Maven and Curios Maven. No manual `libs/` copies are required. Output on this experimental branch: `build/libs/rebornstorage-1.16.5-0.1.3-experimental.1.jar`, Java 8 bytecode. The test source sets are not packaged.
+Dependencies are version-pinned in `build.gradle` and downloaded from Forge Maven, Curse Maven and Curios Maven. No manual `libs/` copies are required. Output on this experimental branch: `build/libs/rebornstorage-1.16.5-0.1.3-experimental.2.jar`, Java 8 bytecode. The test source sets are not packaged.
 
 ## Verification
 

@@ -1,0 +1,848 @@
+{
+  "observed-old32-v2": {
+    "commit": "ff4fa7b7d07abdc1e3ac53bdd57e7776788a5f62",
+    "size": 32,
+    "monitor": "none",
+    "rounds": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 3.999991043,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 12.546211307692312,
+          "p50": 13.185253,
+          "p95": 13.547633,
+          "p99": 19.261672,
+          "max": 19.261672,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 3.999599237,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 12.207258512820514,
+          "p50": 12.76219,
+          "p95": 13.422811,
+          "p99": 13.681379,
+          "max": 13.681379,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.998786348,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 12.336307282051285,
+          "p50": 12.743685,
+          "p95": 13.636512,
+          "p99": 20.481125,
+          "max": 20.481125,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 4.001360273,
+        "produced": 782971,
+        "monitor_change_callbacks": 4765338,
+        "grid_change_callbacks": 783039,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 27.06637124358974,
+          "p50": 31.27743,
+          "p95": 41.867514,
+          "p99": 47.103918,
+          "max": 47.103918,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 4.008723324,
+        "produced": 755972,
+        "monitor_change_callbacks": 4616847,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 25.832465589743588,
+          "p50": 31.161242,
+          "p95": 41.573333,
+          "p99": 41.885198,
+          "max": 41.885198,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 4.000843267,
+        "produced": 755972,
+        "monitor_change_callbacks": 4535850,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 25.90833226923077,
+          "p50": 31.185829,
+          "p95": 42.944463,
+          "p99": 48.093376,
+          "max": 48.093376,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      }
+    ],
+    "summary": {
+      "simple": {
+        "mean_mspt": 12.363259034188035,
+        "p95_mspt": 13.533663,
+        "tps": 20.002705986068502,
+        "items_per_second": 2052201.6238878814
+      },
+      "nested": {
+        "mean_mspt": 26.26905636752137,
+        "p95_mspt": 41.867514,
+        "tps": 19.98180512774122,
+        "items_per_second": 191068.93464470937
+      }
+    }
+  },
+  "observed-old32-menu": {
+    "commit": "ff4fa7b7d07abdc1e3ac53bdd57e7776788a5f62",
+    "size": 32,
+    "monitor": "coalesced",
+    "rounds": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 4.000464904,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 12.610552358974356,
+          "p50": 13.094619,
+          "p95": 13.828724,
+          "p99": 19.797112,
+          "max": 19.797112,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 3.998467754,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 12.636532833333332,
+          "p50": 13.176246,
+          "p95": 13.617175,
+          "p99": 19.160427,
+          "max": 19.160427,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.99966271,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 13.291429358974357,
+          "p50": 13.110694,
+          "p95": 23.639435,
+          "p99": 28.933269,
+          "max": 28.933269,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 4.001012813,
+        "produced": 782971,
+        "monitor_change_callbacks": 4765338,
+        "grid_change_callbacks": 783039,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 29779,
+        "tick_ms": {
+          "mean": 27.885805307692316,
+          "p50": 32.137352,
+          "p95": 43.555861,
+          "p99": 48.841569,
+          "max": 48.841569,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 4.009424128,
+        "produced": 755972,
+        "monitor_change_callbacks": 4616847,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28957,
+        "tick_ms": {
+          "mean": 26.634055474358966,
+          "p50": 31.949416,
+          "p95": 42.917062,
+          "p99": 45.013732,
+          "max": 45.013732,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 4.002051842,
+        "produced": 755972,
+        "monitor_change_callbacks": 4535850,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28816,
+        "tick_ms": {
+          "mean": 26.248612435897442,
+          "p50": 31.777248,
+          "p95": 43.211615,
+          "p99": 45.022671,
+          "max": 45.022671,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      }
+    ],
+    "summary": {
+      "simple": {
+        "mean_mspt": 12.846171517094017,
+        "p95_mspt": 14.076291,
+        "tps": 20.00234132739195,
+        "items_per_second": 2052164.2112933698
+      },
+      "nested": {
+        "mean_mspt": 26.922824405982904,
+        "p95_mspt": 43.211615,
+        "tps": 19.97920700160374,
+        "items_per_second": 191044.09098368936
+      }
+    }
+  },
+  "observed-new32-closed": {
+    "commit": "c5538c8ec75ccc148e394b1a02355032e44dabae",
+    "size": 32,
+    "monitor": "none",
+    "rounds": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 3.99870864,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 8.611891794871797,
+          "p50": 8.659354,
+          "p95": 10.414636,
+          "p99": 15.750822,
+          "max": 15.750822,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 3.999401505,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 8.882042435897436,
+          "p50": 9.321036,
+          "p95": 10.525896,
+          "p99": 16.434826,
+          "max": 16.434826,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.999211966,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 8.53880928205128,
+          "p50": 8.695452,
+          "p95": 9.939115,
+          "p99": 11.377571,
+          "max": 11.377571,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 4.001069955,
+        "produced": 782971,
+        "monitor_change_callbacks": 4765338,
+        "grid_change_callbacks": 783039,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 14.586781358974362,
+          "p50": 15.233915,
+          "p95": 24.04191,
+          "p99": 24.414147,
+          "max": 24.414147,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 4.004954352,
+        "produced": 755972,
+        "monitor_change_callbacks": 4616847,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 14.662482897435899,
+          "p50": 16.029039,
+          "p95": 25.600813,
+          "p99": 27.748483,
+          "max": 27.748483,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.993965374,
+        "produced": 755972,
+        "monitor_change_callbacks": 4535850,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 0,
+        "monitor_encoded_bytes": 0,
+        "tick_ms": {
+          "mean": 14.670130820512822,
+          "p50": 15.192826,
+          "p95": 25.572596,
+          "p99": 28.416443,
+          "max": 28.416443,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      }
+    ],
+    "summary": {
+      "simple": {
+        "mean_mspt": 8.67758117094017,
+        "p95_mspt": 10.431837,
+        "tps": 20.004464144540297,
+        "items_per_second": 2052382.0042660853
+      },
+      "nested": {
+        "mean_mspt": 14.639798358974359,
+        "p95_mspt": 25.026381,
+        "tps": 20.00001719834812,
+        "items_per_second": 191243.0811197795
+      }
+    }
+  },
+  "observed-new32-menu": {
+    "commit": "c5538c8ec75ccc148e394b1a02355032e44dabae",
+    "size": 32,
+    "monitor": "coalesced",
+    "rounds": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 3.999072859,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 8.80976219230769,
+          "p50": 8.810017,
+          "p95": 10.139674,
+          "p99": 15.191167,
+          "max": 15.191167,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 3.999070005,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 8.988547064102562,
+          "p50": 9.200562,
+          "p95": 10.586239,
+          "p99": 15.753517,
+          "max": 15.753517,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.998757559,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 8.587350025641022,
+          "p50": 8.80865,
+          "p95": 9.813921,
+          "p99": 10.083038,
+          "max": 10.083038,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 4.003754708,
+        "produced": 782971,
+        "monitor_change_callbacks": 4765338,
+        "grid_change_callbacks": 783039,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 29779,
+        "tick_ms": {
+          "mean": 13.753762435897437,
+          "p50": 14.576555,
+          "p95": 23.797095,
+          "p99": 24.195382,
+          "max": 24.195382,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 3.999568652,
+        "produced": 755972,
+        "monitor_change_callbacks": 4616847,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28957,
+        "tick_ms": {
+          "mean": 13.053816102564097,
+          "p50": 14.521639,
+          "p95": 23.725084,
+          "p99": 24.477745,
+          "max": 24.477745,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.998360729,
+        "produced": 755972,
+        "monitor_change_callbacks": 4535850,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28816,
+        "tick_ms": {
+          "mean": 13.13869725641026,
+          "p50": 14.498274,
+          "p95": 23.645337,
+          "p99": 24.085136,
+          "max": 24.085136,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      }
+    ],
+    "summary": {
+      "simple": {
+        "mean_mspt": 8.79521976068376,
+        "p95_mspt": 10.172069,
+        "tps": 20.005167296369414,
+        "items_per_second": 2052454.1449717758
+      },
+      "nested": {
+        "mean_mspt": 13.315425264957264,
+        "p95_mspt": 23.725084,
+        "tps": 19.99719357885525,
+        "items_per_second": 191216.08125841082
+      }
+    }
+  },
+  "observed-new64-menu": {
+    "commit": "c5538c8ec75ccc148e394b1a02355032e44dabae",
+    "size": 64,
+    "monitor": "coalesced",
+    "rounds": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 6.406973431,
+        "produced": 72451408,
+        "monitor_change_callbacks": 18112864,
+        "grid_change_callbacks": 18112933,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 79.76474467948722,
+          "p50": 83.496241,
+          "p95": 90.321559,
+          "p99": 92.280926,
+          "max": 92.280926,
+          "ticks_over_50ms": 74,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 6.488541413,
+        "produced": 72451408,
+        "monitor_change_callbacks": 18112864,
+        "grid_change_callbacks": 18112932,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 80.78355844871794,
+          "p50": 84.49974,
+          "p95": 89.513298,
+          "p99": 95.718448,
+          "max": 95.718448,
+          "ticks_over_50ms": 74,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 6.421416029,
+        "produced": 72451408,
+        "monitor_change_callbacks": 18112864,
+        "grid_change_callbacks": 18112933,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 79.94232757692306,
+          "p50": 84.090979,
+          "p95": 88.994704,
+          "p99": 91.62249,
+          "max": 91.62249,
+          "ticks_over_50ms": 74,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 10.265213855,
+        "produced": 6911483,
+        "monitor_change_callbacks": 42064730,
+        "grid_change_callbacks": 6911553,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 29779,
+        "tick_ms": {
+          "mean": 128.1101439358974,
+          "p50": 148.28027,
+          "p95": 199.04689,
+          "p99": 205.166762,
+          "max": 205.166762,
+          "ticks_over_50ms": 73,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 9.904691732,
+        "produced": 6673156,
+        "monitor_change_callbacks": 40753935,
+        "grid_change_callbacks": 6673227,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28957,
+        "tick_ms": {
+          "mean": 122.87410551282053,
+          "p50": 145.561459,
+          "p95": 198.59945,
+          "p99": 203.392146,
+          "max": 203.392146,
+          "ticks_over_50ms": 72,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 9.829470204,
+        "produced": 6673156,
+        "monitor_change_callbacks": 40038954,
+        "grid_change_callbacks": 6673226,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28816,
+        "tick_ms": {
+          "mean": 122.39794652564099,
+          "p50": 148.398758,
+          "p95": 198.292129,
+          "p99": 201.939575,
+          "max": 201.939575,
+          "ticks_over_50ms": 72,
+          "samples": 78
+        }
+      }
+    ],
+    "summary": {
+      "simple": {
+        "mean_mspt": 80.16354356837607,
+        "p95_mspt": 89.28947,
+        "tps": 12.424333947141522,
+        "items_per_second": 11252006.09915751
+      },
+      "nested": {
+        "mean_mspt": 124.46073199145299,
+        "p95_mspt": 198.69994,
+        "tps": 8.000166459196844,
+        "items_per_second": 675273.8837345231
+      }
+    }
+  },
+  "observed-final32-menu": {
+    "commit": "d75c5e27838946554e6273d6ca628890cd19e111",
+    "size": 32,
+    "monitor": "coalesced",
+    "rounds": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 3.999894117,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 9.273375089743586,
+          "p50": 9.677051,
+          "p95": 9.877474,
+          "p99": 15.404282,
+          "max": 15.404282,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 3.997898397,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 8.89267048717949,
+          "p50": 9.600587,
+          "p95": 9.880762,
+          "p99": 10.021283,
+          "max": 10.021283,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.999537373,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688,
+        "tick_ms": {
+          "mean": 7.996718589743587,
+          "p50": 8.411777,
+          "p95": 8.554593,
+          "p99": 8.775509,
+          "max": 8.775509,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "ticks": 80,
+        "seconds": 3.998129761,
+        "produced": 782971,
+        "monitor_change_callbacks": 4765338,
+        "grid_change_callbacks": 783039,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 29779,
+        "tick_ms": {
+          "mean": 13.797596064102564,
+          "p50": 15.042339,
+          "p95": 20.688661,
+          "p99": 25.489316,
+          "max": 25.489316,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "ticks": 80,
+        "seconds": 4.003802852,
+        "produced": 755972,
+        "monitor_change_callbacks": 4616847,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28957,
+        "tick_ms": {
+          "mean": 13.725693948717948,
+          "p50": 15.024864,
+          "p95": 24.855795,
+          "p99": 24.959893,
+          "max": 24.959893,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "ticks": 80,
+        "seconds": 3.997711843,
+        "produced": 755972,
+        "monitor_change_callbacks": 4535850,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28816,
+        "tick_ms": {
+          "mean": 12.991627294871796,
+          "p50": 14.762065,
+          "p95": 24.268611,
+          "p99": 25.374725,
+          "max": 25.374725,
+          "ticks_over_50ms": 0,
+          "samples": 78
+        }
+      }
+    ],
+    "summary": {
+      "simple": {
+        "mean_mspt": 8.72092138888889,
+        "p95_mspt": 9.836978,
+        "tps": 20.004451178762526,
+        "items_per_second": 2052380.6740265556
+      },
+      "nested": {
+        "mean_mspt": 13.504972435897436,
+        "p95_mspt": 20.688661,
+        "tps": 20.000592590891014,
+        "items_per_second": 191248.58310718604
+      }
+    }
+  }
+}

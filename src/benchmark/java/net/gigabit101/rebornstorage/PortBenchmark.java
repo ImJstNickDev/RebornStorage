@@ -44,6 +44,10 @@ public class PortBenchmark {
   static final int SIZE = Integer.getInteger("bench.size", 4);
   static final int WINDOW = Integer.getInteger("bench.ticks", 240);
   static final int REPEATS = Integer.getInteger("bench.repeats", 3);
+  static final int CONCURRENT = Integer.getInteger("bench.concurrent", 1);
+  static final boolean COUNT_LISTENERS = Boolean.getBoolean("bench.countListeners");
+  static long monitorChanges, gridChanges, monitorStarted, gridStarted;
+  static int peakTasks;
   static final int CPUS = (SIZE - 2) * (SIZE - 2) * (SIZE - 2) - 1;
   static final BlockPos STORAGE = new BlockPos(17, 81, 17);
   static final BlockPos CONTROLLER = new BlockPos(15, 80, 16);
@@ -87,6 +91,12 @@ public class PortBenchmark {
   }
 
   static void phase(String next) throws Exception {
+    Files.write(
+        Paths.get("phase-timeline.jsonl"),
+        ("{\"phase\":\"" + next + "\",\"epoch_ms\":" + System.currentTimeMillis() + "}\n")
+            .getBytes(StandardCharsets.UTF_8),
+        StandardOpenOption.CREATE,
+        StandardOpenOption.APPEND);
     phase = next;
     phaseTicks = 0;
     phaseStarted = System.nanoTime();
@@ -102,6 +112,9 @@ public class PortBenchmark {
   public static void started(FMLServerStartedEvent event) {
     server = event.getServer();
     world = server.overworld();
+    check(CONCURRENT >= 1 && CONCURRENT <= 4, "Diagnostic concurrency must be 1..4");
+    result.put("concurrent_orders", CONCURRENT);
+    result.put("count_listeners", COUNT_LISTENERS);
     result.put("size", SIZE);
     result.put("blocks", SIZE * SIZE * SIZE);
     result.put("cpus", CPUS);
@@ -129,6 +142,8 @@ public class PortBenchmark {
     if (server == null || event.phase != TickEvent.Phase.END) return;
     try {
       if (collect) {
+        if (network != null)
+          peakTasks = Math.max(peakTasks, network.getCraftingManager().getTasks().size());
         cpuMs.add((threads.getCurrentThreadCpuTime() - cpuStarted) / 1e6);
         heapPeak = Math.max(heapPeak, usedHeap());
         if (network != null) {
@@ -242,6 +257,7 @@ public class PortBenchmark {
                       e -> e.getNode() instanceof net.gigabit101.rebornstorage.nodes.CraftingNode)
                   .count());
           result.put("configured_fe_per_tick", network.getEnergyUsage());
+          if (COUNT_LISTENERS) installCountingListeners();
           phase("idle_warmup");
         } else if (phaseTicks > 400) throw new IllegalStateException("Network never connected");
         return;
@@ -332,6 +348,9 @@ public class PortBenchmark {
     tickMs.clear();
     cpuMs.clear();
     networkMs.clear();
+    monitorStarted = monitorChanges;
+    gridStarted = gridChanges;
+    peakTasks = 0;
     jobs = 0;
     planningNs = 0;
     heapPeak = usedHeap();
@@ -382,6 +401,9 @@ public class PortBenchmark {
     m.put("produced", produced);
     m.put("items_per_second", produced / seconds);
     m.put("jobs_submitted", jobs);
+    m.put("peak_concurrent_tasks", peakTasks);
+    m.put("monitor_change_callbacks", monitorChanges - monitorStarted);
+    m.put("grid_change_callbacks", gridChanges - gridStarted);
     m.put("planning_ms", planningNs / 1e6);
     m.put("heap_peak_bytes", heapPeak);
     m.put("heap_end_bytes", usedHeap());
@@ -434,7 +456,7 @@ public class PortBenchmark {
     if (!network.getCraftingManager().getTasks().isEmpty()) return;
     int qty = workload == 0 ? Math.max(256, CPUS * 80) : Math.max(8, CPUS * 5);
     int logs = count(Items.OAK_LOG);
-    if (logs < (workload == 0 ? qty / 4 : qty * 2))
+    if (logs < CONCURRENT * (workload == 0 ? qty / 4 : qty * 2))
       check(
           network
               .insertItem(new ItemStack(Items.OAK_LOG), 40_000_000 - logs, Action.PERFORM)
@@ -442,7 +464,7 @@ public class PortBenchmark {
           "Input refill failed");
     if (workload == 1) {
       int iron = count(Items.IRON_INGOT);
-      if (iron < qty * 10)
+      if (iron < CONCURRENT * qty * 10)
         check(
             network
                 .insertItem(new ItemStack(Items.IRON_INGOT), 40_000_000 - iron, Action.PERFORM)
@@ -450,11 +472,48 @@ public class PortBenchmark {
             "Iron refill failed");
     }
     long start = System.nanoTime();
-    ICalculationResult calc = network.getCraftingManager().create(new ItemStack(outputItem()), qty);
-    check(calc.isOk(), "Craft calculation failed " + calc.getType());
-    network.getCraftingManager().start(calc.getTask());
+    for (int order = 0; order < CONCURRENT; order++) {
+      ICalculationResult calc =
+          network.getCraftingManager().create(new ItemStack(outputItem()), qty);
+      check(calc.isOk(), "Craft calculation failed " + calc.getType());
+      network.getCraftingManager().start(calc.getTask());
+      jobs++;
+    }
     planningNs += System.nanoTime() - start;
-    jobs++;
+  }
+
+  // Count real RS callbacks without generating packets or opening a player connection.
+  static void installCountingListeners() {
+    network
+        .getCraftingManager()
+        .addListener(
+            new com.refinedmods.refinedstorage.api.autocrafting.craftingmonitor
+                .ICraftingMonitorListener() {
+              public void onAttached() {}
+
+              public void onChanged() {
+                monitorChanges++;
+              }
+            });
+    network
+        .getItemStorageCache()
+        .addListener(
+            new com.refinedmods.refinedstorage.api.storage.cache.IStorageCacheListener<
+                ItemStack>() {
+              public void onAttached() {}
+
+              public void onInvalidated() {}
+
+              public void onChanged(
+                  com.refinedmods.refinedstorage.api.util.StackListResult<ItemStack> delta) {
+                gridChanges++;
+              }
+
+              public void onChangedBulk(
+                  List<com.refinedmods.refinedstorage.api.util.StackListResult<ItemStack>> deltas) {
+                gridChanges++;
+              }
+            });
   }
 
   static void pattern(

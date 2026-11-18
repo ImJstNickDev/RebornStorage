@@ -17,6 +17,8 @@ p.add_argument(
 p.add_argument(
     "--timeout", type=int, default=1200, help="Wall seconds allowed per isolated case"
 )
+p.add_argument("--jfr", action="store_true", help="Record Java Flight Recorder profile; profiled timings are diagnostic")
+p.add_argument("--property", action="append", default=[], help="Extra bench.name=value property (diagnostic workloads)")
 p.add_argument("--tag", default=datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
 a = p.parse_args()
 assert all(3 <= s <= 64 for s in a.sizes)
@@ -41,6 +43,8 @@ metadata = {
     "repeats": a.repeats,
     "heap": a.heap,
     "controller_capacity_override": a.controller_capacity,
+    "jfr": a.jfr,
+    "benchmark_properties": a.property,
     "source_commit": subprocess.check_output(
         ["git", "rev-parse", "HEAD"], cwd=ROOT, text=True
     ).strip(),
@@ -84,6 +88,12 @@ for size in a.sizes:
         "-Dbench.ticks=" + str(a.ticks),
         "-Dbench.repeats=" + str(a.repeats),
     ]
+    for prop in a.property:
+        assert prop.startswith("bench.") and "=" in prop
+        cmd.insert(1, "-D" + prop)
+    if a.jfr:
+        cmd[1:1] = ["-XX:+FlightRecorder", "-XX:FlightRecorderOptions=stackdepth=128",
+                    "-XX:StartFlightRecording=settings=profile,dumponexit=true,filename=" + str(work / "profile.jfr")]
     samples = []
     last = ""
     start = time.monotonic()

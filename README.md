@@ -75,3 +75,5 @@ python3 scripts/benchmark_port.py --sizes 32 --controller-capacity 2000000 --tag
 ```
 
 RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The comparison uses matching workloads and controller capacities for both versions; the full modpack has not been benchmarked. Benchmark sources are excluded from the release JAR.
+
+The [two ms/tick investigations](docs/investigations/2026-11-18-mspt/README.md) add a JFR profile, listener-count probes and a one-versus-four-order comparison. They identify remaining optimization work; production code and the release JAR are unchanged by those investigations.

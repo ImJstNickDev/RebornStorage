@@ -1,0 +1,46 @@
+[
+  {
+    "mode": "immediate",
+    "phase": "simple",
+    "size": 8,
+    "cpus": 215,
+    "mspt": 0.8118620197740113,
+    "tps": 20.003333137619983,
+    "items_s": 16390.508913708727,
+    "snapshots_s": 4100.461033955012,
+    "encoded_bytes_s": 811435.9866349543
+  },
+  {
+    "mode": "immediate",
+    "phase": "nested",
+    "size": 8,
+    "cpus": 215,
+    "mspt": 1.7987606638418079,
+    "tps": 20.004413019077617,
+    "items_s": 1541.1733196781047,
+    "snapshots_s": 9281.047420201061,
+    "encoded_bytes_s": 4031300.202896054
+  },
+  {
+    "mode": "coalesced",
+    "phase": "simple",
+    "size": 8,
+    "cpus": 215,
+    "mspt": 0.6463210508474576,
+    "tps": 20.003287356913642,
+    "items_s": 16390.471401506627,
+    "snapshots_s": 20.003287356913642,
+    "encoded_bytes_s": 3688.6061886148755
+  },
+  {
+    "mode": "coalesced",
+    "phase": "nested",
+    "size": 8,
+    "cpus": 215,
+    "mspt": 0.6885022768361582,
+    "tps": 20.002613479246847,
+    "items_s": 1541.0346801303092,
+    "snapshots_s": 20.002613479246847,
+    "encoded_bytes_s": 7319.789714284723
+  }
+]

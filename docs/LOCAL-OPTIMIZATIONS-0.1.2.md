@@ -48,6 +48,6 @@ identity of the installed recipe object, 1,000-page inventory boundary operation
 and monitor coalescing/offline/reconnect/close with real RS packet encoding.
 
 The client suite exercises all three wireless screens and both crafter pages.
-Production JAR startup and performance measurements are recorded in the linked
-report when complete. The full Cuboid Outpost pack, arbitrary third-party
+Production JAR startup and the monitor-encoding comparison are documented in
+the [validation report](benchmarks/2026-11-18-local-opt/README.md). The full Cuboid Outpost pack, arbitrary third-party
 providers and a long-running multiplayer world remain outside this test suite.

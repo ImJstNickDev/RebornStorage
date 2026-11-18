@@ -1,0 +1,42 @@
+{
+  "production_commit": "2d4e01f",
+  "jar": "build/libs/rebornstorage-1.16.5-0.1.2.jar",
+  "jar_sha256": "ef9bf7f12b3ff89fd787c2df84c2415e7da990a94311a091fc0da38905bc45f3",
+  "java_class_version": 52,
+  "classes": 60,
+  "json_resources": 95,
+  "test_classes_in_release": false,
+  "refined_storage_jar_unchanged": true,
+  "refined_storage_sha256": "5a6a5f61220efe90baf8722068d36a59c709c07f01d3749d42daace006207996",
+  "server_suite": [
+    {
+      "start": 1,
+      "general_checks": 128,
+      "local_checks": 20,
+      "log_sha256": "8c2fbfd6d58580b8a7071eb43766a69c79d1a8c0d5740fc26e1f093ac54268d2"
+    },
+    {
+      "start": 2,
+      "general_checks": 128,
+      "local_checks": 20,
+      "log_sha256": "a9d2995d3fd4ce0bd3f96f9df5063d198cfcfef983ef15946838d9a0648af146"
+    }
+  ],
+  "client_suite": "PASS: wireless screens and both crafter pages",
+  "monitor_screenshot_visually_checked": true,
+  "production_jar_smoke": {
+    "exit_code": 0,
+    "planks_before": 120,
+    "tasks_before": 1,
+    "planks_after": 4000,
+    "tasks_after": 0,
+    "verified_saved_nbt": true
+  },
+  "size_64_launched": false,
+  "full_modpack_tested": false,
+  "logs_sha256": {
+    ".local-investigation/local-opt-build.log": "fa1deced9afc669b0b9182a3b52d5ba31720e5aa836d232eafa6fe370487655f",
+    ".local-investigation/local-opt-client.log": "411ca6cc5eeade3dee4970da39df8e4806b8f432c8bc4554974f87a9cf9c5268",
+    ".local-investigation/local-opt-production.log": "97269d3d81e178a536d4bd7bace28642a5b8437fab411fca649c32ce0283db92"
+  }
+}

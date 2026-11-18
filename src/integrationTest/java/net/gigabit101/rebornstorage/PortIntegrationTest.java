@@ -39,6 +39,8 @@ public class PortIntegrationTest {
   private static int pausedOutput;
   private static BlockEntityMultiCrafter pausedPart;
   private static ItemStack secondPattern;
+  private static com.refinedmods.refinedstorage.api.autocrafting.ICraftingPattern cachedPattern;
+  private static java.util.concurrent.CompletableFuture<Void> reloadFuture;
   private static final BlockPos SECOND_STORAGE = new BlockPos(3, 81, 2);
   private static final BlockPos STORAGE = new BlockPos(3, 81, 1);
 
@@ -287,6 +289,12 @@ public class PortIntegrationTest {
                 == net.gigabit101.rebornstorage.init.ModItems.DISK_262144K.get(),
             "Disk Manipulator returns original tier");
         scenarioNetwork = network;
+        LocalOptimizationTest.run(world, network, server);
+        cachedPattern =
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                .getNode()
+                .getPatterns()
+                .get(0);
         check(
             network.getNodeGraph().all().stream()
                     .filter(
@@ -323,6 +331,31 @@ public class PortIntegrationTest {
         placeAsPlayer(world, new BlockPos(6, 80, 0), "refinedstorage:disk_drive");
       }
       if (tick == 230) {
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getPatterns().get(0)
+                == cachedPattern,
+            "editing another page preserves the unchanged cached pattern");
+        BlockEntityMultiCrafter cacheTile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
+        ItemStack original = cacheTile.getStorageNode().patterns.getStackInSlot(0).copy();
+        com.refinedmods.refinedstorage.item.PatternItem.setInputSlot(
+            cacheTile.getStorageNode().patterns.getStackInSlot(0),
+            0,
+            new ItemStack(Items.BIRCH_LOG));
+        ((BlockEntityMultiCrafter) world.getBlockEntity(SECOND_STORAGE))
+            .getStorageNode()
+            .patterns
+            .setStackInSlot(77, new ItemStack(Items.DIAMOND));
+        cacheTile.getNode().applyPatternChanges();
+        check(
+            cacheTile.getNode().getPatterns().get(0).getOutputs().get(0).getItem()
+                == Items.BIRCH_PLANKS,
+            "in-place pattern NBT mutation detected during inventory refresh");
+        cacheTile.getStorageNode().patterns.setStackInSlot(0, original);
+        ((BlockEntityMultiCrafter) world.getBlockEntity(SECOND_STORAGE))
+            .getStorageNode()
+            .patterns
+            .setStackInSlot(77, ItemStack.EMPTY);
+        cacheTile.getNode().applyPatternChanges();
         check(
             ((com.refinedmods.refinedstorage.tile.DiskDriveTile)
                         world.getBlockEntity(new BlockPos(6, 80, 0)))
@@ -451,9 +484,18 @@ public class PortIntegrationTest {
             ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getNetwork()
                 == scenarioNetwork,
             "recreated provider at the same anchor receives its network connection");
+        cachedPattern =
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                .getNode()
+                .getPatterns()
+                .get(0);
         RebornStorageConfig.CPU_COST.set(7);
       }
       if (tick == 475) {
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getPatterns().get(0)
+                == cachedPattern,
+            "energy-only configuration preserves the pattern cache");
         check(
             ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getEnergyUsage()
                 == 62,
@@ -486,6 +528,42 @@ public class PortIntegrationTest {
                         .defaultBlockState());
               }
             }
+      }
+      if (tick == 520) {
+        cachedPattern =
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                .getNode()
+                .getPatterns()
+                .get(0);
+        reloadFuture = server.reloadResources(server.getPackRepository().getSelectedIds());
+      }
+      if (tick == 521) {
+        if (!reloadFuture.isDone()) {
+          tick--;
+          return;
+        }
+        reloadFuture.join();
+      }
+      if (tick == 525) {
+        check(
+            ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE)).getNode().getPatterns().get(0)
+                != cachedPattern,
+            "actual recipe reload refreshes cached patterns");
+        java.lang.reflect.Field recipe =
+            com.refinedmods.refinedstorage.apiimpl.autocrafting.CraftingPattern.class
+                .getDeclaredField("recipe");
+        recipe.setAccessible(true);
+        check(
+            recipe.get(
+                    ((BlockEntityMultiCrafter) world.getBlockEntity(STORAGE))
+                        .getNode()
+                        .getPatterns()
+                        .get(0))
+                == world
+                    .getRecipeManager()
+                    .byKey(new ResourceLocation("minecraft:oak_planks"))
+                    .get(),
+            "cached pattern uses the newly installed recipe manager after reload");
       }
       if (tick == 550) {
         BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);

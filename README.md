@@ -15,7 +15,7 @@ Existing lower item disks, fluid disks and the Advanced Wireless Transmitter are
 
 Tested with Minecraft **1.16.5**, Forge **36.2.26**, Refined Storage **1.9.17**, ExtraStorage **1.6.1**, RSInfinityBooster **1.16.5-1.1+13** and Curios **4.0.8.2**, on Java 8.
 
-Refined Storage and ExtraStorage are required. RSInfinityBooster and Curios are optional integrations. Install the built Reborn Storage JAR on **both server and clients**, alongside the required mods. This is a content mod, not a server-only recipe script. Version 0.1.1 remains an initial backport; the complete Cuboid Outpost pack and long-running production worlds have not been tested.
+Refined Storage and ExtraStorage are required. RSInfinityBooster and Curios are optional integrations. Install the built Reborn Storage JAR on **both server and clients**, alongside the required mods. This is a content mod, not a server-only recipe script. Version 0.1.2 remains an initial backport; the complete Cuboid Outpost pack and long-running production worlds have not been tested.
 
 ## Disk progression
 
@@ -50,7 +50,7 @@ Install JDK 17 for Gradle and JDK 8 for Minecraft development runs. Set `JAVA_HO
 ./gradlew build
 ```
 
-Dependencies are version-pinned in `build.gradle` and downloaded from Forge Maven, Curse Maven and Curios Maven. No manual `libs/` copies are required. Output: `build/libs/rebornstorage-1.16.5-0.1.1.jar`, Java 8 bytecode. The test source sets are not packaged.
+Dependencies are version-pinned in `build.gradle` and downloaded from Forge Maven, Curse Maven and Curios Maven. No manual `libs/` copies are required. Output: `build/libs/rebornstorage-1.16.5-0.1.2.jar`, Java 8 bytecode. The test source sets are not packaged.
 
 ## Verification
 
@@ -77,3 +77,5 @@ python3 scripts/benchmark_port.py --sizes 32 --controller-capacity 2000000 --tag
 RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The comparison uses matching workloads and controller capacities for both versions; the full modpack has not been benchmarked. Benchmark sources are excluded from the release JAR.
 
 The [two ms/tick investigations](docs/investigations/2026-11-18-mspt/README.md) add a JFR profile, listener-count probes and a one-versus-four-order comparison. They identify remaining optimization work; production code and the release JAR are unchanged by those investigations.
+
+[Local optimizations in 0.1.2](docs/LOCAL-OPTIMIZATIONS-0.1.2.md) coalesce Super Wireless Monitor updates, index pages directly and reuse unchanged pattern definitions, with full refresh after server recipe reloads. Refined Storage itself is unchanged.

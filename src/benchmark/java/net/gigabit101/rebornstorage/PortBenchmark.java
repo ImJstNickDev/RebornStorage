@@ -47,6 +47,7 @@ public class PortBenchmark {
   static final int CONCURRENT = Integer.getInteger("bench.concurrent", 1);
   static final boolean COUNT_LISTENERS = Boolean.getBoolean("bench.countListeners");
   static long monitorChanges, gridChanges, monitorStarted, gridStarted;
+  static long snapshotsStarted, bytesStarted;
   static int peakTasks;
   static final int CPUS = (SIZE - 2) * (SIZE - 2) * (SIZE - 2) - 1;
   static final BlockPos STORAGE = new BlockPos(17, 81, 17);
@@ -115,6 +116,7 @@ public class PortBenchmark {
     check(CONCURRENT >= 1 && CONCURRENT <= 4, "Diagnostic concurrency must be 1..4");
     result.put("concurrent_orders", CONCURRENT);
     result.put("count_listeners", COUNT_LISTENERS);
+    result.put("monitor_encoding", System.getProperty("bench.monitor", "none"));
     result.put("size", SIZE);
     result.put("blocks", SIZE * SIZE * SIZE);
     result.put("cpus", CPUS);
@@ -258,6 +260,7 @@ public class PortBenchmark {
                   .count());
           result.put("configured_fe_per_tick", network.getEnergyUsage());
           if (COUNT_LISTENERS) installCountingListeners();
+          MonitorEncodingProbe.install(System.getProperty("bench.monitor", "none"));
           phase("idle_warmup");
         } else if (phaseTicks > 400) throw new IllegalStateException("Network never connected");
         return;
@@ -348,6 +351,8 @@ public class PortBenchmark {
     tickMs.clear();
     cpuMs.clear();
     networkMs.clear();
+    snapshotsStarted = MonitorEncodingProbe.snapshots;
+    bytesStarted = MonitorEncodingProbe.bytes;
     monitorStarted = monitorChanges;
     gridStarted = gridChanges;
     peakTasks = 0;
@@ -400,6 +405,8 @@ public class PortBenchmark {
     m.put("output", output == null ? "" : output.getRegistryName().toString());
     m.put("produced", produced);
     m.put("items_per_second", produced / seconds);
+    m.put("monitor_snapshots", MonitorEncodingProbe.snapshots - snapshotsStarted);
+    m.put("monitor_encoded_bytes", MonitorEncodingProbe.bytes - bytesStarted);
     m.put("jobs_submitted", jobs);
     m.put("peak_concurrent_tasks", peakTasks);
     m.put("monitor_change_callbacks", monitorChanges - monitorStarted);

@@ -56,7 +56,11 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase {
   }
 
   public void markPatternsDirty() {
-    if (node != null) RebornStorageEventHandler.patterns(node);
+    if (node != null) node.refreshAllPatterns();
+  }
+
+  public void markPatternsDirty(PatternStorageNode storage, int slot) {
+    if (node != null) node.patternChanged(storage, slot);
   }
 
   private void invalidateStructure() {
@@ -245,8 +249,7 @@ public class MultiBlockCrafter extends RectangularMultiblockControllerBase {
       if (lastCpuCost != RebornStorageConfig.CPU_COST.get()
           || lastStorageCost != RebornStorageConfig.STORAGE_COST.get()
           || lastFrameCost != RebornStorageConfig.FRAME_COST.get()
-          || lastHeatCost != RebornStorageConfig.HEAT_COST.get())
-        node.configure(speed, energyCost(), storages);
+          || lastHeatCost != RebornStorageConfig.HEAT_COST.get()) node.setEnergyCost(energyCost());
       node.update();
     }
     return false; // Static structure: inventory/page changes explicitly mark their saved data.

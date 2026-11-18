@@ -39,7 +39,7 @@ public final class PatternStorageNode extends NetworkNode implements ICraftingPa
           super.onContentsChanged(slot);
           if (!reading) {
             markDirty();
-            if (crafter != null) crafter.markPatternsDirty();
+            if (crafter != null) crafter.markPatternsDirty(PatternStorageNode.this, slot);
           }
         }
 

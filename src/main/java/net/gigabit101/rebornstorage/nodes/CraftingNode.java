@@ -9,7 +9,11 @@ import com.refinedmods.refinedstorage.apiimpl.network.node.ConnectivityStateChan
 import com.refinedmods.refinedstorage.apiimpl.network.node.NetworkNode;
 import com.refinedmods.refinedstorage.tile.config.RedstoneMode;
 import java.util.ArrayList;
+import java.util.BitSet;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.UUID;
 import net.gigabit101.rebornstorage.Constants;
 import net.gigabit101.rebornstorage.RebornStorageEventHandler;
@@ -37,7 +41,28 @@ public final class CraftingNode extends NetworkNode
   private final MultiBlockCrafter crafter;
   private final UUID uuid;
   private final List<ICraftingPattern> patterns = new ArrayList<>();
-  private IItemHandlerModifiable inventory = new CombinedInvWrapper();
+  private IItemHandlerModifiable inventory = new PatternInventory();
+  private final List<PatternStorageNode> storagePages = new ArrayList<>();
+  private final Map<PatternStorageNode, Integer> pageIndices = new IdentityHashMap<>();
+  private final Map<Integer, ICraftingPattern> cachedPatterns = new TreeMap<>();
+  private final Map<Integer, ItemStack> observedStacks = new java.util.HashMap<>();
+  private final BitSet dirtySlots = new BitSet(), dynamicSlots = new BitSet();
+  private boolean fullRefresh = true;
+
+  /** Storage pages have a fixed size: preserve the RS inventory API with constant-time lookup. */
+  private static final class PatternInventory extends CombinedInvWrapper {
+    PatternInventory(IItemHandlerModifiable... handlers) {
+      super(handlers);
+      for (IItemHandlerModifiable handler : handlers)
+        if (handler.getSlots() != 78) throw new IllegalArgumentException("Invalid storage page");
+    }
+
+    @Override
+    protected int getIndexForSlot(int slot) {
+      return slot < 0 || slot >= getSlots() ? -1 : slot / 78;
+    }
+  }
+
   private int cpus, pages, energy;
   private boolean valid;
   private boolean patternsReady;
@@ -55,11 +80,15 @@ public final class CraftingNode extends NetworkNode
     this.pages = storages.size();
     this.ownerStorage = storages.isEmpty() ? null : storages.get(0);
     this.redstoneMode = ownerStorage == null ? RedstoneMode.IGNORE : ownerStorage.getRedstoneMode();
+    storagePages.clear();
+    storagePages.addAll(storages);
+    pageIndices.clear();
+    for (int i = 0; i < storages.size(); i++) pageIndices.put(storages.get(i), i);
     this.inventory =
-        new CombinedInvWrapper(
+        new PatternInventory(
             storages.stream().map(s -> s.patterns).toArray(IItemHandlerModifiable[]::new));
     valid = true;
-    RebornStorageEventHandler.patterns(this);
+    refreshAllPatterns();
   }
 
   public void invalidate() {
@@ -67,21 +96,78 @@ public final class CraftingNode extends NetworkNode
     valid = false;
     patterns.clear();
     RebornStorageEventHandler.graph(network);
+    refreshAllPatterns();
+  }
+
+  public void setEnergyCost(int energy) {
+    this.energy = energy;
+  }
+
+  public void refreshAllPatterns() {
+    fullRefresh = true;
     RebornStorageEventHandler.patterns(this);
   }
 
+  public void patternChanged(PatternStorageNode storage, int slot) {
+    Integer page = pageIndices.get(storage);
+    if (page == null) {
+      refreshAllPatterns();
+      return;
+    }
+    dirtySlots.set(page * 78 + slot);
+    RebornStorageEventHandler.patterns(this);
+  }
+
+  /** Explicit rebuild remains a full refresh for callers and reloads. */
   public void rebuildPatterns(String reason) {
+    fullRefresh = true;
+    applyPatternChanges();
+  }
+
+  public void applyPatternChanges() {
     patterns.clear();
     if (isActive()) {
-      for (int slot = 0; slot < inventory.getSlots(); slot++) {
-        ItemStack stack = inventory.getStackInSlot(slot);
+      if (fullRefresh) {
+        cachedPatterns.clear();
+        observedStacks.clear();
+        dynamicSlots.clear();
+        dirtySlots.clear();
+        dirtySlots.set(0, inventory.getSlots());
+      } else {
+        dirtySlots.or(dynamicSlots); // Custom providers may depend on external state.
+        // Preserve detection of in-place stack/NBT edits when another inventory change causes
+        // a refresh. No idle polling; direct page access keeps this comparison linear.
+        for (int page = 0; page < storagePages.size(); page++)
+          for (int local = 0; local < 78; local++) {
+            int index = page * 78 + local;
+            if (!ItemStack.matches(
+                observedStacks.getOrDefault(index, ItemStack.EMPTY),
+                storagePages.get(page).patterns.getStackInSlot(local))) dirtySlots.set(index);
+          }
+      }
+      for (int slot = dirtySlots.nextSetBit(0); slot >= 0; slot = dirtySlots.nextSetBit(slot + 1)) {
+        ItemStack stack = storagePages.get(slot / 78).patterns.getStackInSlot(slot % 78);
+        cachedPatterns.remove(slot);
+        if (stack.isEmpty()) observedStacks.remove(slot);
+        else observedStacks.put(slot, stack.copy());
+        dynamicSlots.clear(slot);
         if (!stack.isEmpty() && stack.getItem() instanceof ICraftingPatternProvider) {
+          if (stack.getItem() != com.refinedmods.refinedstorage.RSItems.PATTERN.get())
+            dynamicSlots.set(slot);
           ICraftingPattern pattern =
               ((ICraftingPatternProvider) stack.getItem()).create(world, stack, this);
-          if (pattern.isValid()) patterns.add(pattern);
+          if (pattern.isValid()) cachedPatterns.put(slot, pattern);
         }
       }
+      patterns.addAll(cachedPatterns.values());
+      fullRefresh = false;
+    } else {
+      observedStacks.clear();
+      cachedPatterns.clear();
+      dynamicSlots.clear();
+      fullRefresh = true;
     }
+    dirtySlots.clear();
     patternsReady = isActive();
     RebornStorageEventHandler.queue(network);
   }
@@ -98,7 +184,7 @@ public final class CraftingNode extends NetworkNode
   @Override
   public void onConnected(INetwork network) {
     super.onConnected(network);
-    RebornStorageEventHandler.patterns(this);
+    refreshAllPatterns();
   }
 
   @Override
@@ -112,14 +198,14 @@ public final class CraftingNode extends NetworkNode
   protected void onConnectedStateChange(
       INetwork network, boolean state, ConnectivityStateChangeCause cause) {
     RebornStorageEventHandler.queue(network);
-    RebornStorageEventHandler.patterns(this);
+    refreshAllPatterns();
   }
 
   @Override
   public void setRedstoneMode(RedstoneMode mode) {
     super.setRedstoneMode(mode);
     if (ownerStorage != null) ownerStorage.setRedstoneMode(mode);
-    RebornStorageEventHandler.patterns(this);
+    refreshAllPatterns();
   }
 
   @Override

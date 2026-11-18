@@ -2,7 +2,7 @@
 
 ## Baseline and scope
 
-Implemented backport, version `1.16.5-0.1.1`, branch `port/forge-1.16.5`.
+Implemented backport, version `1.16.5-0.1.2`, branch `port/forge-1.16.5`.
 Upstream baseline: `TechReborn/RebornStorage`, branch `1.18.2`, commit
 `fcbd0496e360ba370d1115910f6e6dd61d19ab52`. This is an unofficial fork.
 
@@ -60,7 +60,7 @@ construction, dependencies and recipes.
 ## Automated verification
 
 Verified on 2026-11-18: build/reobfuscation succeeds; the server suite passes
-**123 checks on each of two consecutive starts**, including an in-flight
+**128 checks plus 20 local-optimization checks on each of two consecutive starts**, including an in-flight
 crafting task saved and resumed across the real restart; the client suite passes all
 three wireless screens and both crafter pages. Screenshots were visually
 inspected. Release classes are Java 8 (major 52), all JSON resources parse, and
@@ -125,3 +125,5 @@ Curios equipment/keybinding interaction was not exercised by
 the automated screen suite. There is no supported save migration from other
 Minecraft versions or upstream Reborn disk IDs. RS's numeric and performance
 limits remain those of RS 1.9.17.
+
+See [0.1.2 local optimizations](LOCAL-OPTIMIZATIONS-0.1.2.md) for monitor snapshot coalescing, direct page indexing, incremental pattern definitions and server recipe-reload invalidation. RS output/byproduct evaluation and CPU budgets remain unchanged.

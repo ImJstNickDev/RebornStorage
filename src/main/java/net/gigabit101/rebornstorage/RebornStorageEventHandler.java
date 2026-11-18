@@ -82,13 +82,36 @@ public class RebornStorageEventHandler {
                 });
       }
     }
-    for (CraftingNode node : drain(providers)) node.rebuildPatterns("coalesced update");
+    for (CraftingNode node : drain(providers)) node.applyPatternChanges();
     for (INetwork network : drain(managers)) {
       if (API.instance()
           .getNetworkManager((ServerWorld) network.getWorld())
           .all()
           .contains(network)) network.getCraftingManager().invalidate();
     }
+  }
+
+  @SubscribeEvent(priority = EventPriority.LOWEST)
+  public static void monitorTick(TickEvent.ServerTickEvent event) {
+    if (event.phase == TickEvent.Phase.END)
+      net.gigabit101.rebornstorage.containers.CoalescingCraftingMonitorContainer.flushPending();
+  }
+
+  @SubscribeEvent
+  public static void reload(net.minecraftforge.event.OnDatapackSyncEvent event) {
+    // This fires after the server installs the new recipe/tag resources. A reload listener
+    // itself can run too early and still observe the old recipe manager.
+    if (event.getPlayer() != null) return;
+    for (ServerWorld world : event.getPlayerList().getServer().getAllLevels())
+      for (INetwork network : API.instance().getNetworkManager(world).all())
+        network
+            .getNodeGraph()
+            .all()
+            .forEach(
+                entry -> {
+                  if (entry.getNode() instanceof CraftingNode)
+                    ((CraftingNode) entry.getNode()).refreshAllPatterns();
+                });
   }
 
   @SubscribeEvent
@@ -100,6 +123,7 @@ public class RebornStorageEventHandler {
 
   @SubscribeEvent
   public static void stopped(FMLServerStoppedEvent event) {
+    net.gigabit101.rebornstorage.containers.CoalescingCraftingMonitorContainer.clearPending();
     graphs.clear();
     managers.clear();
     providers.clear();

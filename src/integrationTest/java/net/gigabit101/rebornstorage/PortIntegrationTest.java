@@ -83,13 +83,23 @@ public class PortIntegrationTest {
             restoredNetwork != null
                 && restoredNetwork
                         .extractItem(
-                            new ItemStack(Items.OAK_PLANKS), Integer.MAX_VALUE, Action.PERFORM)
+                            new ItemStack(
+                                Files.exists(Paths.get("nested-restart.txt"))
+                                    ? Items.STICK
+                                    : Items.OAK_PLANKS),
+                            Integer.MAX_VALUE,
+                            Action.PERFORM)
                         .getCount()
                     == 4000,
             "in-flight crafting task survives actual server restart with exactly 4000 output");
         check(
             restoredNetwork.getCraftingManager().getTasks().isEmpty(),
             "restored crafting task completes");
+        if (Files.deleteIfExists(Paths.get("nested-restart.txt"))) {
+          restoredTile.getStorageNode().patterns.setStackInSlot(20, ItemStack.EMPTY);
+          restoredTile.getNode().applyPatternChanges();
+          restoredNetwork.getCraftingManager().invalidate();
+        }
         Files.delete(Paths.get("pending-craft-marker.txt"));
         restoringTask = false;
         return;
@@ -584,10 +594,21 @@ public class PortIntegrationTest {
         scenarioNetwork.extractItem(
             new ItemStack(Items.OAK_PLANKS), Integer.MAX_VALUE, Action.PERFORM);
         scenarioNetwork.insertItem(new ItemStack(Items.OAK_LOG), 1000, Action.PERFORM);
+        boolean nested =
+            net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+                == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK;
+        if (nested) {
+          tile.getStorageNode().patterns.setStackInSlot(20, secondPattern.copy());
+          tile.getNode().applyPatternChanges();
+          scenarioNetwork.getCraftingManager().invalidate();
+          scenarioNetwork.extractItem(
+              new ItemStack(Items.STICK), Integer.MAX_VALUE, Action.PERFORM);
+          Files.write(Paths.get("nested-restart.txt"), new byte[] {1});
+        }
         check(
             scenarioNetwork
                     .getCraftingManager()
-                    .request(null, new ItemStack(Items.OAK_PLANKS), 4000)
+                    .request(null, new ItemStack(nested ? Items.STICK : Items.OAK_PLANKS), 4000)
                 != null,
             "start long craft for restart persistence test");
       }
@@ -597,7 +618,11 @@ public class PortIntegrationTest {
           check(
               scenarioNetwork.getCraftingManager().getTasks().stream()
                   .allMatch(
-                      t -> t instanceof net.gigabit101.rebornstorage.crafting.ExperimentalTask),
+                      t ->
+                          t instanceof net.gigabit101.rebornstorage.crafting.ExperimentalTask
+                              && ((net.gigabit101.rebornstorage.crafting.ExperimentalTask) t)
+                                      .getIntermediatePlanCount()
+                                  == 1),
               "experimental factory selected for saved pending order");
         check(
             !scenarioNetwork.getCraftingManager().getTasks().isEmpty(),

@@ -65,16 +65,18 @@ public final class ExperimentalPattern extends CraftingPattern {
   }
 
   /**
-   * Exact vanilla shaped/shapeless assemble copies this stack. Base Item and BlockItem use Forge's
-   * default container check, backed by Item's final craftingRemainingItem. Subclasses (including
-   * modded items), tagged inputs and container items stay on RS's path.
+   * Exact vanilla shaped/shapeless assemble copies this stack. Base Item, BlockItem and
+   * MinecartItem use Forge's default container check, backed by Item's final craftingRemainingItem.
+   * Subclasses (including modded items), tagged inputs and container items stay on RS's path.
    */
-  ItemStack fixedIntermediate(NonNullList<ItemStack> inputs) {
+  ItemStack fixedResult(NonNullList<ItemStack> inputs) {
     if (!reusable || inputs.size() != getInputs().size()) return null;
     for (ItemStack input : inputs) {
       if (input.isEmpty()) continue;
       Class<?> type = input.getItem().getClass();
-      if ((type != net.minecraft.item.Item.class && type != net.minecraft.item.BlockItem.class)
+      if ((type != net.minecraft.item.Item.class
+              && type != net.minecraft.item.BlockItem.class
+              && type != net.minecraft.item.MinecartItem.class)
           || input.getTag() != null
           || input.hasContainerItem()) return null;
     }

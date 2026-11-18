@@ -38,7 +38,7 @@ public final class ExperimentalCraftingNode extends CraftingNode {
   private final int[] fixedAmounts;
 
   public boolean hasIntermediatePlan() {
-    return fixedResult != null;
+    return fixedResult != null && !isRoot();
   }
 
   public ExperimentalCraftingNode(INetwork network, CompoundNBT tag)
@@ -70,8 +70,8 @@ public final class ExperimentalCraftingNode extends CraftingNode {
     initialRequirements = tag.copy();
     eligible = ours && compile(tag);
     fixedResult =
-        eligible && !isRoot() && pattern instanceof ExperimentalPattern
-            ? ((ExperimentalPattern) pattern).fixedIntermediate(recipe)
+        eligible && pattern instanceof ExperimentalPattern
+            ? ((ExperimentalPattern) pattern).fixedResult(recipe)
             : null;
     fixedInputs = fixedResult == null ? null : ingredients.toArray(new ItemStack[0]);
     fixedAmounts =
@@ -172,7 +172,7 @@ public final class ExperimentalCraftingNode extends CraftingNode {
       if (interval < 0) throw new IllegalStateException("Negative crafting interval");
       if (interval != 0 && ticks % interval != 0) continue;
       if (privateDisk != null && fixedResult != null) {
-        runIntermediate(privateDisk, matched, container, listener);
+        runFixedRecipe(network, privateDisk, matched, container, listener);
         if (getQuantity() <= 0) return;
         continue;
       }
@@ -212,7 +212,8 @@ public final class ExperimentalCraftingNode extends CraftingNode {
     }
   }
 
-  private void runIntermediate(
+  private void runFixedRecipe(
+      INetwork network,
       TaskItemStorage disk,
       ItemStack[] matched,
       ICraftingPatternContainer container,
@@ -237,7 +238,11 @@ public final class ExperimentalCraftingNode extends CraftingNode {
       consumedCrafts++;
       ItemStack output = fixedResult.copy();
       if (output.isEmpty()) throw new IllegalStateException("Cannot have empty result");
-      if (!disk.growOutput(outputRevision, destination, output)) {
+      if (isRoot()) {
+        // Network hooks may refuse all or part of this individual output.
+        output = network.insertItem(output, output.getCount(), Action.PERFORM);
+      }
+      if (!output.isEmpty() && !disk.growOutput(outputRevision, destination, output)) {
         destination = disk.addOutput(output);
         outputRevision =
             !destination.isEmpty() && disk.singleton(destination) ? disk.revision() : -1;

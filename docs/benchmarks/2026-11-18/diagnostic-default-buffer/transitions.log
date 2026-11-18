@@ -1,0 +1,23 @@
+[18Nov2026 07:06:27.942] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE baseline_warmup size=32
+[18Nov2026 07:06:33.892] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE baseline size=32
+[18Nov2026 07:06:44.708] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE placing size=32
+[18Nov2026 07:06:44.907] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE assembling size=32
+[18Nov2026 07:06:45.223] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE connecting size=32
+[18Nov2026 07:06:45.226] [Server thread/DEBUG] [com.refinedmods.refinedstorage.apiimpl.network.Network/]: Network at position BlockPos{x=15, y=80, z=16} changed running state to true, causing an invalidation of the node graph
+[18Nov2026 07:12:54.163] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE idle_warmup size=32
+[18Nov2026 07:12:54.167] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 369312ms or 7386 ticks behind
+[18Nov2026 07:12:54.364] [Server thread/DEBUG] [com.refinedmods.refinedstorage.apiimpl.network.Network/]: Network at position BlockPos{x=15, y=80, z=16} changed running state to false, causing an invalidation of the node graph
+[18Nov2026 07:16:00.727] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE idle size=32
+[18Nov2026 07:16:01.668] [Server thread/WARN] [net.minecraft.server.MinecraftServer/]: Can't keep up! Is the server overloaded? Running 172513ms or 3450 ticks behind
+[18Nov2026 07:16:03.615] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE craft_warmup size=32
+[18Nov2026 07:16:08.613] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE simple size=32
+[18Nov2026 07:16:20.614] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE simple size=32
+[18Nov2026 07:16:32.614] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE simple size=32
+[18Nov2026 07:16:44.616] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE draining size=32
+[18Nov2026 07:16:44.864] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE craft_warmup size=32
+[18Nov2026 07:16:49.864] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE nested size=32
+[18Nov2026 07:17:01.866] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE nested size=32
+[18Nov2026 07:17:13.865] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE nested size=32
+[18Nov2026 07:17:25.867] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE draining size=32
+[18Nov2026 07:17:26.114] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE saving size=32
+[18Nov2026 07:17:32.794] [Server thread/INFO] [net.gigabit101.rebornstorage.RebornStorage/]: BENCH PHASE done size=32

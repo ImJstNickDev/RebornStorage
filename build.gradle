@@ -15,6 +15,10 @@ archivesBaseName = 'rebornstorage'
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 
 sourceSets {
+    benchmark {
+        compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
+        runtimeClasspath += output + compileClasspath + sourceSets.main.runtimeClasspath
+    }
     integrationTest {
         compileClasspath += sourceSets.main.output + sourceSets.main.compileClasspath
         runtimeClasspath += output + compileClasspath + sourceSets.main.runtimeClasspath
@@ -38,7 +42,7 @@ minecraft {
             }
         }
         server {
-            workingDirectory project.file(project.hasProperty('integrationTest') ? 'run/integration' : 'run/server')
+            workingDirectory project.file(project.hasProperty('benchmark') ? 'run/benchmark' : (project.hasProperty('integrationTest') ? 'run/integration' : 'run/server'))
             args '--nogui'
             property 'terminal.jline', 'false'
             property 'terminal.ansi', 'false'
@@ -46,6 +50,7 @@ minecraft {
                 rebornstorage {
                     source sourceSets.main
                     if (project.hasProperty('integrationTest')) source sourceSets.integrationTest
+                    if (project.hasProperty('benchmark')) source sourceSets.benchmark
                 }
             }
         }

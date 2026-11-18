@@ -62,3 +62,14 @@ xvfb-run -a python3 scripts/test_port.py --client
 ```
 
 The server suite runs twice, including a real save/restart. The client suite uses a disposable copy of that world, exercises the actual networked menus and captures screenshots. All test data stays in the ignored `run/` directory; the tests do not touch Prism instances. See [port and verification notes](docs/PORT-1.16.5.md).
+
+## Performance measurements
+
+The [2026-11-18 benchmark report](docs/benchmarks/2026-11-18/README.md) measures solid 4³, 8³, 16³ and 32³ structures at idle and during continuous simple and nested crafting. It includes raw results, tick timings, memory, startup costs and the [diagnosis and proposed remedies](docs/benchmarks/2026-11-18/ANALYSIS.md). The 64³ run was cancelled before launch. These are isolated dedicated-server tests, not a full Cuboid Outpost world.
+
+```sh
+python3 scripts/benchmark_port.py --sizes 4 8 16 --tag local-benchmark
+python3 scripts/benchmark_port.py --sizes 32 --controller-capacity 2000000 --tag local-benchmark-32
+```
+
+RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. The current port also performs redundant global pattern rebuilds during connection/state changes; see the report before increasing the default 16³ limit. Benchmark sources are excluded from the release JAR.

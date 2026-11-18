@@ -15,7 +15,7 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-      - run: ./gradlew build compileIntegrationTestJava compileClientTestJava --console=plain
+      - run: ./gradlew build compileIntegrationTestJava compileClientTestJava compileBenchmarkJava --console=plain
       - uses: actions/upload-artifact@v4
         with:
           name: rebornstorage-forge-1.16.5

@@ -93,8 +93,11 @@ and screenshots stay in `run/client/`.
 The targeted dependency set is tested; the full Cuboid Outpost pack is not.
 Client GUI testing uses an integrated server, while the separate dedicated-server
 suite uses simulated players. A remote human multiplayer session, forced chunk
-unload/reload, long-running workloads and large-scale throughput benchmarks remain
-manual validation. Curios equipment/keybinding interaction was not exercised by
+unload/reload and long-running production workloads remain manual validation.
+Short dedicated-server throughput tests, including nested crafting and large
+structures, are documented in [the benchmark report](benchmarks/2026-11-18/README.md);
+they exposed expensive connection invalidations in this first port.
+Curios equipment/keybinding interaction was not exercised by
 the automated screen suite. There is no supported save migration from other
 Minecraft versions or upstream Reborn disk IDs. RS's numeric and performance
 limits remain those of RS 1.9.17.

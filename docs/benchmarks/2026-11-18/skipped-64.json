@@ -1,0 +1,7 @@
+{
+  "size": 64,
+  "status": "skipped",
+  "reason": "User requested no launch after observed 32^3 initialization stalls",
+  "date": "2026-11-18T07:14:28.251867+01:00",
+  "launch_guard": "Precreated case directory: current runner requires a new directory before subprocess launch."
+}

@@ -1,0 +1,21 @@
+{
+  "sizes": [
+    4,
+    8,
+    16,
+    32,
+    64
+  ],
+  "ticks": 240,
+  "repeats": 3,
+  "heap": "6G",
+  "source_commit": "5d8d61908009c61a9ae48fe6720cea97caafdc30",
+  "date": "2026-11-18T06:59:07.609950+01:00",
+  "cpu": "Intel(R) Core(TM) Ultra 9 275HX",
+  "logical_cpus": 24,
+  "initial_load": [
+    5.40478515625,
+    4.29150390625,
+    2.87109375
+  ]
+}

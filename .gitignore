@@ -16,3 +16,6 @@ out/
 dep/
 RebornStorage_Client.launch
 RebornStorage_Server.launch
+
+# Local port investigation: logs, mappings and unvalidated build drafts
+/.local-investigation/

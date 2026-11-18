@@ -2,7 +2,7 @@
 
 Branch: `experiment/crafting-engine-1.16.5`, based on stable `00928a2`.
 The user requires explicit authorization before merging into `port/forge-1.16.5`.
-Experimental artifact: `rebornstorage-1.16.5-0.1.3-experimental.2.jar`.
+Experimental artifact: `rebornstorage-1.16.5-0.1.3-experimental.3.jar`.
 
 ## Three comparable modes
 
@@ -27,6 +27,25 @@ Tests can override the configuration with `-Dreborn.craftingExperiment=OFF`,
 No crafting budgets, update intervals, recipe definitions or item quantities
 are changed. There is no batching, universal result cache, background storage
 access, or suppression of per-craft task notifications in this prototype.
+
+## Guarded plans in experimental.3
+
+In TASK mode, exact vanilla shaped and shapeless recipes can use a fixed
+result template when their fixed inputs are plain, untagged items from the
+supported vanilla classes and every input has the standard empty remainder.
+The executor copies the live result for each individual craft. It binds a
+private input slot only while the item bucket has one variant, the stack and
+requirement have no serializable capability data, and the item, tag, count
+and inventory revision still match. Other candidates use the RS comparer.
+The output lookup also checks the fresh stack against its destination.
+An RS listener or external inventory can run between crafts, so these checks
+also apply to the next iteration of the same server tick.
+
+The root still inserts each result through the public RS network. Every craft
+commits its own changes before notifying RS. The Super Wireless Grid continues
+to send one snapshot per changed server tick. The
+[4³–64³ comparison](benchmarks/2026-11-18-guarded/README.md) records tick costs,
+throughput, listener counts, client observations and save compatibility.
 
 ## Integration boundary
 

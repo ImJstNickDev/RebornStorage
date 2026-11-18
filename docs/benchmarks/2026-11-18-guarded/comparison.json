@@ -1,0 +1,1081 @@
+{
+  "comparisons": {
+    "4": {
+      "v2": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.2867239615384615,
+            "p95_mspt": 0.474798,
+            "tps": 25.21905987848897,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.28672396153846164
+            ]
+          },
+          "simple": {
+            "mean_mspt": 0.2781066452991453,
+            "p95_mspt": 0.496409,
+            "tps": 20.003768019764927,
+            "items_per_second": 532.100229325747,
+            "windows_mspt": [
+              0.36907161538461525,
+              0.3678311538461539,
+              0.09741716666666672
+            ]
+          },
+          "nested": {
+            "mean_mspt": 0.10199289743589744,
+            "p95_mspt": 0.146107,
+            "tps": 20.003670863638348,
+            "items_per_second": 49.59243401610341,
+            "windows_mspt": [
+              0.10871570512820512,
+              0.10740955128205126,
+              0.0898534358974359
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 2128,
+            "monitor_change_callbacks": 544,
+            "grid_change_callbacks": 612,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 2128,
+            "monitor_change_callbacks": 544,
+            "grid_change_callbacks": 612,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 2128,
+            "monitor_change_callbacks": 544,
+            "grid_change_callbacks": 612,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 203,
+            "monitor_change_callbacks": 1250,
+            "grid_change_callbacks": 271,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 196,
+            "monitor_change_callbacks": 1215,
+            "grid_change_callbacks": 264,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 196,
+            "monitor_change_callbacks": 1194,
+            "grid_change_callbacks": 264,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "e25a25cf165aa65524bc6afca7cddee6317d9d11",
+        "raw_sha256": "3154ca7b89e431dd73c8950cd7f6b996cd9ffd3b796b9b090e4790579e497646",
+        "peak_rss": 2853769216
+      },
+      "v3": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.21603715384615385,
+            "p95_mspt": 0.3825,
+            "tps": 25.113537841550798,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.21603715384615385
+            ]
+          },
+          "simple": {
+            "mean_mspt": 0.2530270128205128,
+            "p95_mspt": 0.38564,
+            "tps": 20.003321950009294,
+            "items_per_second": 532.0883638702472,
+            "windows_mspt": [
+              0.26093582051282055,
+              0.23429312820512813,
+              0.2638520897435897
+            ]
+          },
+          "nested": {
+            "mean_mspt": 0.22716525641025642,
+            "p95_mspt": 0.33336,
+            "tps": 20.00289279001786,
+            "items_per_second": 49.59050504191928,
+            "windows_mspt": [
+              0.23269971794871794,
+              0.22643708974358973,
+              0.2223589615384615
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 2128,
+            "monitor_change_callbacks": 544,
+            "grid_change_callbacks": 612,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 2128,
+            "monitor_change_callbacks": 544,
+            "grid_change_callbacks": 612,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 2128,
+            "monitor_change_callbacks": 544,
+            "grid_change_callbacks": 612,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 203,
+            "monitor_change_callbacks": 1250,
+            "grid_change_callbacks": 271,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 196,
+            "monitor_change_callbacks": 1215,
+            "grid_change_callbacks": 264,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 196,
+            "monitor_change_callbacks": 1194,
+            "grid_change_callbacks": 264,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "4e8aceb12cc7d89c9c2dc565c895cd9d86fc514a",
+        "raw_sha256": "b4b2a2b9d32c9017c48934ce27fb5163096c34b67c161e31ff2e733b9d05dc50",
+        "peak_rss": 2858524672
+      }
+    },
+    "8": {
+      "v2": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.08552424358974359,
+            "p95_mspt": 0.161915,
+            "tps": 24.29642838499904,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.08552424358974357
+            ]
+          },
+          "simple": {
+            "mean_mspt": 0.1686402735042735,
+            "p95_mspt": 0.233623,
+            "tps": 20.00369405050779,
+            "items_per_second": 16343.018039264864,
+            "windows_mspt": [
+              0.16717062820512818,
+              0.1848413076923077,
+              0.1539088846153846
+            ]
+          },
+          "nested": {
+            "mean_mspt": 0.19492613247863247,
+            "p95_mspt": 0.306869,
+            "tps": 20.00407238738147,
+            "items_per_second": 1523.226761997485,
+            "windows_mspt": [
+              0.22963250000000002,
+              0.17190621794871794,
+              0.1832396794871795
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 65360,
+            "monitor_change_callbacks": 16352,
+            "grid_change_callbacks": 16420,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 65360,
+            "monitor_change_callbacks": 16352,
+            "grid_change_callbacks": 16420,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 65360,
+            "monitor_change_callbacks": 16352,
+            "grid_change_callbacks": 16420,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 6235,
+            "monitor_change_callbacks": 37962,
+            "grid_change_callbacks": 6303,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 6020,
+            "monitor_change_callbacks": 36783,
+            "grid_change_callbacks": 6088,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 6020,
+            "monitor_change_callbacks": 36138,
+            "grid_change_callbacks": 6088,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "e25a25cf165aa65524bc6afca7cddee6317d9d11",
+        "raw_sha256": "9a7737c6cf160f94f2870c822a925560fa3fd7cb6c0462c66761057d762ece6d",
+        "peak_rss": 2856177664
+      },
+      "v3": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.25260546153846153,
+            "p95_mspt": 0.391724,
+            "tps": 25.84472370530617,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.25260546153846164
+            ]
+          },
+          "simple": {
+            "mean_mspt": 0.41273959401709404,
+            "p95_mspt": 0.568332,
+            "tps": 20.005609733014015,
+            "items_per_second": 16344.583151872452,
+            "windows_mspt": [
+              0.4381872948717947,
+              0.42872666666666687,
+              0.3713048205128205
+            ]
+          },
+          "nested": {
+            "mean_mspt": 0.3754687905982906,
+            "p95_mspt": 0.48353,
+            "tps": 20.003192177751966,
+            "items_per_second": 1523.1597377017383,
+            "windows_mspt": [
+              0.3700679615384615,
+              0.3721270128205128,
+              0.3842113974358975
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 65360,
+            "monitor_change_callbacks": 16352,
+            "grid_change_callbacks": 16420,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 65360,
+            "monitor_change_callbacks": 16352,
+            "grid_change_callbacks": 16420,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 65360,
+            "monitor_change_callbacks": 16352,
+            "grid_change_callbacks": 16420,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 6235,
+            "monitor_change_callbacks": 37962,
+            "grid_change_callbacks": 6303,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 6020,
+            "monitor_change_callbacks": 36783,
+            "grid_change_callbacks": 6088,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 6020,
+            "monitor_change_callbacks": 36138,
+            "grid_change_callbacks": 6088,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "4e8aceb12cc7d89c9c2dc565c895cd9d86fc514a",
+        "raw_sha256": "f6b8c65875f9809e6600c2ff9b03117559875084968f7638e7e41f8a1a409bfe",
+        "peak_rss": 2862481408
+      }
+    },
+    "16": {
+      "v2": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.14294483333333333,
+            "p95_mspt": 0.252717,
+            "tps": 25.334210327692247,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.14294483333333333
+            ]
+          },
+          "simple": {
+            "mean_mspt": 1.0964987564102564,
+            "p95_mspt": 1.481302,
+            "tps": 20.0024096686235,
+            "items_per_second": 208493.1169399302,
+            "windows_mspt": [
+              1.0379822435897437,
+              1.1886726025641028,
+              1.0628414230769234
+            ]
+          },
+          "nested": {
+            "mean_mspt": 1.7493629572649572,
+            "p95_mspt": 2.836728,
+            "tps": 20.0027620747335,
+            "items_per_second": 19432.266631393704,
+            "windows_mspt": [
+              1.7856453461538466,
+              1.7415946794871793,
+              1.7208488461538467
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 833872,
+            "monitor_change_callbacks": 208480,
+            "grid_change_callbacks": 208548,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 833872,
+            "monitor_change_callbacks": 208480,
+            "grid_change_callbacks": 208548,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 833872,
+            "monitor_change_callbacks": 208480,
+            "grid_change_callbacks": 208548,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 79547,
+            "monitor_change_callbacks": 484154,
+            "grid_change_callbacks": 79615,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 76804,
+            "monitor_change_callbacks": 469071,
+            "grid_change_callbacks": 76872,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 76804,
+            "monitor_change_callbacks": 460842,
+            "grid_change_callbacks": 76872,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "e25a25cf165aa65524bc6afca7cddee6317d9d11",
+        "raw_sha256": "fc08eeb090e5b24fdaae2fefb6ba967ede691388d9587e56da2fffd73b30e9c5",
+        "peak_rss": 2874028032
+      },
+      "v3": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.07231749999999999,
+            "p95_mspt": 0.17895,
+            "tps": 25.20423656071623,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.07231749999999999
+            ]
+          },
+          "simple": {
+            "mean_mspt": 0.8464570427350427,
+            "p95_mspt": 1.027215,
+            "tps": 20.003714793189623,
+            "items_per_second": 208506.7207753327,
+            "windows_mspt": [
+              0.8866220641025643,
+              0.8417015512820515,
+              0.8110475128205128
+            ]
+          },
+          "nested": {
+            "mean_mspt": 0.8825737521367522,
+            "p95_mspt": 1.34766,
+            "tps": 20.007308191174115,
+            "items_per_second": 19436.683088805003,
+            "windows_mspt": [
+              0.9085060512820516,
+              0.8821417307692309,
+              0.8570734743589745
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 833872,
+            "monitor_change_callbacks": 208480,
+            "grid_change_callbacks": 208548,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 833872,
+            "monitor_change_callbacks": 208480,
+            "grid_change_callbacks": 208548,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 833872,
+            "monitor_change_callbacks": 208480,
+            "grid_change_callbacks": 208548,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 79547,
+            "monitor_change_callbacks": 484154,
+            "grid_change_callbacks": 79615,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 76804,
+            "monitor_change_callbacks": 469071,
+            "grid_change_callbacks": 76872,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 76804,
+            "monitor_change_callbacks": 460842,
+            "grid_change_callbacks": 76872,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "4e8aceb12cc7d89c9c2dc565c895cd9d86fc514a",
+        "raw_sha256": "60bb65ac2f2b325eeb86ea61a1889fc482be8f898a1b2782c4ad881f26d18674",
+        "peak_rss": 2847256576
+      }
+    },
+    "32": {
+      "v2": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.2916128333333333,
+            "p95_mspt": 0.5176,
+            "tps": 25.52330802143487,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.29161283333333327
+            ]
+          },
+          "simple": {
+            "mean_mspt": 9.49581661965812,
+            "p95_mspt": 11.468013,
+            "tps": 20.008693480521668,
+            "items_per_second": 2052815.918066297,
+            "windows_mspt": [
+              9.817146628205128,
+              9.413890153846156,
+              9.256413076923078
+            ]
+          },
+          "nested": {
+            "mean_mspt": 14.51227176923077,
+            "p95_mspt": 25.658401,
+            "tps": 19.99566666909131,
+            "items_per_second": 191201.48072457366,
+            "windows_mspt": [
+              14.551007423076921,
+              14.405359576923075,
+              14.580448307692308
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 8207696,
+            "monitor_change_callbacks": 2051936,
+            "grid_change_callbacks": 2052004,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 8207696,
+            "monitor_change_callbacks": 2051936,
+            "grid_change_callbacks": 2052004,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 8207696,
+            "monitor_change_callbacks": 2051936,
+            "grid_change_callbacks": 2052004,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 782971,
+            "monitor_change_callbacks": 4765338,
+            "grid_change_callbacks": 783039,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 755972,
+            "monitor_change_callbacks": 4616847,
+            "grid_change_callbacks": 756040,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 755972,
+            "monitor_change_callbacks": 4535850,
+            "grid_change_callbacks": 756040,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "e25a25cf165aa65524bc6afca7cddee6317d9d11",
+        "raw_sha256": "c82bbfda038549c084fc80e893fe0a8d90ebeaae439a28aa34d3ca37bbc3665f",
+        "peak_rss": 2884362240
+      },
+      "v3": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.09238896153846154,
+            "p95_mspt": 0.21545,
+            "tps": 24.760541147024565,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.09238896153846156
+            ]
+          },
+          "simple": {
+            "mean_mspt": 7.967278636752137,
+            "p95_mspt": 10.21815,
+            "tps": 20.003840238896846,
+            "items_per_second": 2052317.9939179088,
+            "windows_mspt": [
+              7.856526884615382,
+              8.412257705128209,
+              7.633051320512818
+            ]
+          },
+          "nested": {
+            "mean_mspt": 7.0861865470085466,
+            "p95_mspt": 11.259048,
+            "tps": 19.999268210110134,
+            "items_per_second": 191235.9191850204,
+            "windows_mspt": [
+              7.543752051282049,
+              6.839099756410255,
+              6.875707833333333
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 8207696,
+            "monitor_change_callbacks": 2051936,
+            "grid_change_callbacks": 2052004,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 8207696,
+            "monitor_change_callbacks": 2051936,
+            "grid_change_callbacks": 2052004,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 8207696,
+            "monitor_change_callbacks": 2051936,
+            "grid_change_callbacks": 2052004,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 782971,
+            "monitor_change_callbacks": 4765338,
+            "grid_change_callbacks": 783039,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 755972,
+            "monitor_change_callbacks": 4616847,
+            "grid_change_callbacks": 756040,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 755972,
+            "monitor_change_callbacks": 4535850,
+            "grid_change_callbacks": 756040,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "4e8aceb12cc7d89c9c2dc565c895cd9d86fc514a",
+        "raw_sha256": "09e0eaeeb6c5a1567f76b45a77671338613c3bfb16013428448c1bdf7e4cbbfd",
+        "peak_rss": 2901082112
+      }
+    },
+    "64": {
+      "v2": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.3618045,
+            "p95_mspt": 0.644459,
+            "tps": 26.9592013287271,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.3618045
+            ]
+          },
+          "simple": {
+            "mean_mspt": 78.61645320940171,
+            "p95_mspt": 88.624899,
+            "tps": 12.651366629634499,
+            "items_per_second": 11457616.568015425,
+            "windows_mspt": [
+              73.93266970512819,
+              80.7747405128205,
+              81.14194941025642
+            ]
+          },
+          "nested": {
+            "mean_mspt": 125.9005208076923,
+            "p95_mspt": 202.693728,
+            "tps": 7.908196106200314,
+            "items_per_second": 667510.8980800174,
+            "windows_mspt": [
+              128.57019248717947,
+              124.10052823076923,
+              125.03084170512818
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 72451408,
+            "monitor_change_callbacks": 18112864,
+            "grid_change_callbacks": 18112933,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 72451408,
+            "monitor_change_callbacks": 18112864,
+            "grid_change_callbacks": 18112932,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 72451408,
+            "monitor_change_callbacks": 18112864,
+            "grid_change_callbacks": 18112933,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 6911483,
+            "monitor_change_callbacks": 42064730,
+            "grid_change_callbacks": 6911553,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 6673156,
+            "monitor_change_callbacks": 40753935,
+            "grid_change_callbacks": 6673227,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 6673156,
+            "monitor_change_callbacks": 40038954,
+            "grid_change_callbacks": 6673226,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "e25a25cf165aa65524bc6afca7cddee6317d9d11",
+        "raw_sha256": "a65eec4ee7c8689af5de9935cb7d397bf7995d2e380c92d5fc6c9deea4b84486",
+        "peak_rss": 2949836800
+      },
+      "v3": {
+        "summary": {
+          "idle": {
+            "mean_mspt": 0.10099633333333333,
+            "p95_mspt": 0.172982,
+            "tps": 25.80055334840225,
+            "items_per_second": 0.0,
+            "windows_mspt": [
+              0.10099633333333334
+            ]
+          },
+          "simple": {
+            "mean_mspt": 63.95887938888889,
+            "p95_mspt": 71.928987,
+            "tps": 15.57498942584927,
+            "items_per_second": 14105373.918598639,
+            "windows_mspt": [
+              63.957008884615405,
+              63.954175769230766,
+              63.96545351282051
+            ]
+          },
+          "nested": {
+            "mean_mspt": 59.49590071367521,
+            "p95_mspt": 93.302023,
+            "tps": 16.73224900830712,
+            "items_per_second": 1412326.9595801623,
+            "windows_mspt": [
+              61.14903879487178,
+              58.589307833333336,
+              58.74935551282051
+            ]
+          }
+        },
+        "windows": [
+          {
+            "phase": "simple",
+            "repeat": 1,
+            "produced": 72451408,
+            "monitor_change_callbacks": 18112864,
+            "grid_change_callbacks": 18112933,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 2,
+            "produced": 72451408,
+            "monitor_change_callbacks": 18112864,
+            "grid_change_callbacks": 18112932,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "simple",
+            "repeat": 3,
+            "produced": 72451408,
+            "monitor_change_callbacks": 18112864,
+            "grid_change_callbacks": 18112933,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 14688
+          },
+          {
+            "phase": "nested",
+            "repeat": 1,
+            "produced": 6911483,
+            "monitor_change_callbacks": 42064730,
+            "grid_change_callbacks": 6911553,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 29779
+          },
+          {
+            "phase": "nested",
+            "repeat": 2,
+            "produced": 6673156,
+            "monitor_change_callbacks": 40753935,
+            "grid_change_callbacks": 6673227,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28957
+          },
+          {
+            "phase": "nested",
+            "repeat": 3,
+            "produced": 6673156,
+            "monitor_change_callbacks": 40038954,
+            "grid_change_callbacks": 6673226,
+            "monitor_snapshots": 80,
+            "monitor_encoded_bytes": 28816
+          }
+        ],
+        "source": "4e8aceb12cc7d89c9c2dc565c895cd9d86fc514a",
+        "raw_sha256": "9656ce9c7ad48f6ae3af01021edeee7372b9f1493fdb9888ebd6e613fd2f7bef",
+        "peak_rss": 2948706304
+      }
+    }
+  },
+  "first_baseline_32": {
+    "summary": {
+      "idle": {
+        "mean_mspt": 0.1551188717948718,
+        "p95_mspt": 0.289127,
+        "tps": 24.684086374731535,
+        "items_per_second": 0.0,
+        "windows_mspt": [
+          0.15511887179487177
+        ]
+      },
+      "simple": {
+        "mean_mspt": 12.026452615384615,
+        "p95_mspt": 19.584508,
+        "tps": 20.00284316245452,
+        "items_per_second": 2052215.6976638166,
+        "windows_mspt": [
+          12.052572256410256,
+          14.631361038461538,
+          9.395424551282053
+        ]
+      },
+      "nested": {
+        "mean_mspt": 14.401285068376069,
+        "p95_mspt": 24.059274,
+        "tps": 19.990271601056868,
+        "items_per_second": 191149.8922972476,
+        "windows_mspt": [
+          14.444642974358976,
+          14.152840794871796,
+          14.606371435897431
+        ]
+      }
+    },
+    "windows": [
+      {
+        "phase": "simple",
+        "repeat": 1,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688
+      },
+      {
+        "phase": "simple",
+        "repeat": 2,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688
+      },
+      {
+        "phase": "simple",
+        "repeat": 3,
+        "produced": 8207696,
+        "monitor_change_callbacks": 2051936,
+        "grid_change_callbacks": 2052004,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 14688
+      },
+      {
+        "phase": "nested",
+        "repeat": 1,
+        "produced": 782971,
+        "monitor_change_callbacks": 4765338,
+        "grid_change_callbacks": 783039,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 29779
+      },
+      {
+        "phase": "nested",
+        "repeat": 2,
+        "produced": 755972,
+        "monitor_change_callbacks": 4616847,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28957
+      },
+      {
+        "phase": "nested",
+        "repeat": 3,
+        "produced": 755972,
+        "monitor_change_callbacks": 4535850,
+        "grid_change_callbacks": 756040,
+        "monitor_snapshots": 80,
+        "monitor_encoded_bytes": 28816
+      }
+    ],
+    "source": "e25a25cf165aa65524bc6afca7cddee6317d9d11",
+    "raw_sha256": "949699b793d2b8aa5e7a6704e86ffac69458345cb9681dfeaa3cca54d04720d5",
+    "peak_rss": 2886148096
+  },
+  "production_smokes": {
+    "2": {
+      "jar_sha256": "3efc7a7c92c64130c7aa5794236e7fd716088adeaf8dc40762b1b0b6f96c748e",
+      "before": {
+        "tasks": [
+          "rebornstorage:experimental_v6"
+        ],
+        "oak_planks": 120
+      },
+      "after": {
+        "tasks": [],
+        "oak_planks": 4000
+      }
+    },
+    "3": {
+      "jar_sha256": "3efc7a7c92c64130c7aa5794236e7fd716088adeaf8dc40762b1b0b6f96c748e",
+      "before": {
+        "tasks": [
+          "rebornstorage:experimental_v6"
+        ],
+        "stick": 96
+      },
+      "after": {
+        "tasks": [],
+        "stick": 4000
+      }
+    }
+  },
+  "active_client": [
+    35,
+    1,
+    51
+  ]
+}

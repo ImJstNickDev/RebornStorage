@@ -1,19 +1,18 @@
 package net.gigabit101.rebornstorage.storage;
 
+import com.refinedmods.refinedstorage.api.storage.StorageType;
 import com.refinedmods.refinedstorage.api.storage.disk.IStorageDisk;
 import com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskFactory;
+import com.refinedmods.refinedstorage.api.util.Action;
 import com.refinedmods.refinedstorage.apiimpl.storage.disk.ItemStorageDisk;
 import com.refinedmods.refinedstorage.util.StackUtils;
 import java.util.UUID;
 import javax.annotation.Nullable;
-import net.gigabit101.rebornstorage.items.ItemRebornStorageCell;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.registries.ForgeRegistries;
 
 /** RS storage implementation with a distinct factory ID for correct disk recovery. */
 public class RebornItemDiskFactory implements IStorageDiskFactory<ItemStack> {
@@ -26,6 +25,20 @@ public class RebornItemDiskFactory implements IStorageDiskFactory<ItemStack> {
         == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK)
       return new RebornItemDisk(world, capacity, owner);
     return new ItemStorageDisk(world, capacity, owner) {
+      @Override
+      public ItemStack insert(ItemStack input, int size, Action action) {
+        // Ask RS to perform its normal partial insert without overflowing stored + size.
+        if (size > Integer.MAX_VALUE - capacity
+            && size > Integer.MAX_VALUE - getStored()
+            && !input.isEmpty()) {
+          int safeRequest = capacity - getStored() + 1;
+          ItemStack remainder = super.insert(input, safeRequest, action);
+          remainder.grow(size - safeRequest);
+          return remainder;
+        }
+        return super.insert(input, size, action);
+      }
+
       @Override
       public ResourceLocation getFactoryId() {
         return ID;
@@ -50,13 +63,6 @@ public class RebornItemDiskFactory implements IStorageDiskFactory<ItemStack> {
 
   @Override
   public ItemStack createDiskItem(IStorageDisk<ItemStack> disk, UUID id) {
-    Item item =
-        ForgeRegistries.ITEMS.getValue(
-            new ResourceLocation("rebornstorage", "disk_" + disk.getCapacity() / 1000 + "k"));
-    if (!(item instanceof ItemRebornStorageCell))
-      throw new IllegalArgumentException("Unknown Reborn disk capacity: " + disk.getCapacity());
-    ItemStack stack = new ItemStack(item);
-    ((ItemRebornStorageCell) item).setId(stack, id);
-    return stack;
+    return DiskTier.recover(StorageType.ITEM, disk.getCapacity(), id);
   }
 }

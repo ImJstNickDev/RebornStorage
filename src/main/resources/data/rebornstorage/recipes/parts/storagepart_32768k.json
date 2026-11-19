@@ -7,7 +7,7 @@
   ],
   "key": {
     "G": {
-      "item": "extrastorage:storagepart_16384k"
+      "item": "rebornstorage:larger_item_disk_part"
     },
     "D": {
       "item": "refinedstorage:advanced_processor"

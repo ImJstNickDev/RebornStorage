@@ -10,6 +10,10 @@ import net.gigabit101.rebornstorage.init.ModContainers;
 import net.gigabit101.rebornstorage.init.ModItems;
 import net.gigabit101.rebornstorage.multiblocks.MultiBlockCrafter;
 import net.gigabit101.rebornstorage.nodes.PatternStorageNode;
+import net.gigabit101.rebornstorage.nodes.AdvancedWirelessTransmitterNode;
+import net.gigabit101.rebornstorage.blockentities.BlockEntityAdvancedWirelessTransmitter;
+import net.gigabit101.rebornstorage.storage.RebornFluidDiskFactory;
+import com.refinedmods.refinedstorage.tile.data.TileDataManager;
 import net.gigabit101.rebornstorage.packet.PacketHandler;
 import net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter;
 import net.minecraft.util.math.BlockPos;
@@ -69,6 +73,13 @@ public class RebornStorage
             node.read(tag);
             return node;
         });
+        API.instance().getStorageDiskRegistry().add(RebornFluidDiskFactory.ID, RebornFluidDiskFactory.INSTANCE);
+        API.instance().getNetworkNodeRegistry().add(AdvancedWirelessTransmitterNode.ID, (tag, world, pos) -> {
+            AdvancedWirelessTransmitterNode node = new AdvancedWirelessTransmitterNode(world, pos);
+            node.read(tag);
+            return node;
+        });
+        event.enqueueWork(() -> TileDataManager.registerParameter(BlockEntityAdvancedWirelessTransmitter.RANGE));
         API.instance().getGridManager().add(WirelessCraftingGridGridFactory.ID, new WirelessCraftingGridGridFactory());
     }
 

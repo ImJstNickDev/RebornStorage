@@ -1,0 +1,23 @@
+{
+  "conditions": [
+    {
+      "type": "forge:not",
+      "value": {
+        "type": "forge:mod_loaded",
+        "modid": "extrastorage"
+      }
+    }
+  ],
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    {
+      "item": "refinedstorage:storage_housing"
+    },
+    {
+      "item": "rebornstorage:large_item_disk_part"
+    }
+  ],
+  "result": {
+    "item": "rebornstorage:large_item_disk"
+  }
+}

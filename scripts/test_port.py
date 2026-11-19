@@ -9,6 +9,7 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("--with-extra-storage", action="store_true", help="Test coexistence with ExtraStorage and its disk recipes")
 parser.add_argument("--client", action="store_true", help="Test client screens using a copy of the server test world (requires a display)")
 parser.add_argument("--accept-eula", action="store_true", help="Accept the Minecraft EULA for this isolated test server")
 parser.add_argument("--tag", default="", help="Use separate disposable worlds and logs for this test campaign")
@@ -38,7 +39,7 @@ else:
     (work / "options.txt").write_text("tutorialStep:none\npauseOnLostFocus:false\nrenderDistance:3\nmaxFps:60\nguiScale:2\n")
 run_task = "runClient" if args.client else "runServer"
 prop = "clientTest" if args.client else "integrationTest"
-subprocess.run(["bash", "gradlew", run_task, "-P" + prop, "-PexportLaunch", "--console=plain"], cwd=ROOT, check=True)
+subprocess.run(["bash", "gradlew", run_task, "-P" + prop, "-PexportLaunch", *(["-PwithExtraStorage"] if args.with_extra_storage else []), "--console=plain"], cwd=ROOT, check=True)
 launch = json.loads((ROOT / f"build/{run_task}-launch.json").read_text())
 launch["command"][1:1] = ["-D" + v for v in args.property]
 for iteration in range(1 if args.client else 2):

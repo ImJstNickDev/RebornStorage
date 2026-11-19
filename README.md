@@ -1,44 +1,31 @@
 # Reborn Storage — Forge 1.16.5 backport
 
-This branch contains the [opt-in crafting engine experiment](docs/EXPERIMENT-CRAFTING-ENGINE.md),
-version `1.16.5-0.1.3-experimental.4`. It has not been approved for merge.
-The [first experimental comparison](docs/benchmarks/2026-11-18-experiment/README.md)
-records a roughly 45% reduction in active tick time at 32³ with both paths enabled.
-The [live monitor tests](docs/benchmarks/2026-11-18-experiment/LIVE-MONITOR.md) cover per-craft notifications, client update cadence and the private inventory introduced in experimental.2.
-The [experimental.3 comparison](docs/benchmarks/2026-11-18-guarded/README.md) measures guarded recipe execution against experimental.2 from 4³ through 64³, including nested orders and an active monitor.
-The [experimental.4 measurements](docs/benchmarks/2026-11-18-release4/README.md) compare 64³ crafting on the full Cuboid Outpost LE server pack and a smaller Forge installation, including an ExtraStorage-only network.
-The stable 0.1.2 implementation remains on `port/forge-1.16.5`; the notes below
-describe that baseline unless the experiment is explicitly enabled.
-
-Unofficial, focused backport of [TechReborn/RebornStorage](https://github.com/TechReborn/RebornStorage), based on its `1.18.2` branch. Targeted at Cuboid Outpost LE 1.1.2. Upstream authorship and MIT license are preserved.
-
-## Included
-
-- Multiblock crafter: frame, heat conductor, crafting CPU and pattern storage; 78 patterns per storage block, with independently paged player menus.
-- Super Wireless Grid: crafting/items, fluids and crafting monitor in one item. Normal rechargeable and creative variants.
-- Four **new item disk tiers**: 32768k, 65536k, 131072k and 262144k. `k` means 1,000 items.
-- The components, processors, recipes, disk recovery factory and empty-disk disassembly needed by those features.
-
-Existing lower item disks, fluid disks and the Advanced Wireless Transmitter are excluded. ExtraStorage supplies the lower tiers; RSInfinityBooster supplies unlimited/interdimensional wireless access. The Super Wireless Grid overlaps the ordinary wireless crafting grid's crafting function, but additionally combines fluid access and the crafting monitor.
+Unofficial backport of Reborn Storage for Minecraft 1.16.5 and Forge 36.2.26. Version `1.16.5-0.1.4` includes the upstream 1.18.2 gameplay content and four additional item disk tiers. [Original project](https://github.com/TechReborn/RebornStorage)
 
 ## Requirements and installation
 
-Tested with Minecraft **1.16.5**, Forge **36.2.26**, Refined Storage **1.9.17**, ExtraStorage **1.6.1**, RSInfinityBooster **1.16.5-1.1+13** and Curios **4.0.8.2**, on Java 8.
+Install Refined Storage 1.9.17 and the Reborn Storage JAR on both the server and clients. ExtraStorage, RSInfinityBooster, Curios and Patchouli are optional. The multiblock uses the standard RS crafting engine by default. Set `experimental_crafting = "TASK"` under `[general]` in `config/rebornstorage-common.toml` and restart to use the optimized engine. [Crafting engine and compatibility](docs/EXPERIMENT-CRAFTING-ENGINE.md)
 
-Refined Storage and ExtraStorage are required. RSInfinityBooster and Curios are optional integrations. Install the built Reborn Storage JAR on **both server and clients**, alongside the required mods. This is a content mod, not a server-only recipe script. Version 0.1.2 remains an initial backport; the complete Cuboid Outpost pack and long-running production worlds have not been tested.
+## Included content
+
+- A multiblock crafter with frames, heat conductors, crafting CPUs and pattern storage. Each storage block holds 78 patterns. Players can browse pages independently.
+- The rechargeable and creative Super Wireless Grids with item crafting, fluid access and a crafting monitor.
+- An Advanced Wireless Transmitter with a default range of 1,000 blocks. Four Range Upgrades add 500 blocks each, up to 3,000. Base power draw is 100 FE/t plus installed upgrade costs. The range and base cost are configurable.
+- Eight item disks, four fluid disks, their twelve components, and the raw and smelted Super Advanced Processor.
+- With Patchouli installed, a book and Refined Storage silicon craft the Reborn Storage guide.
 
 ## Disk progression
 
-| New disk | Item capacity | Previous component required |
-| --- | ---: | --- |
-| 32768k | 32,768,000 | 3 × ExtraStorage 16384k |
-| 65536k | 65,536,000 | 3 × Reborn 32768k |
-| 131072k | 131,072,000 | 3 × Reborn 65536k |
-| 262144k | 262,144,000 | 3 × Reborn 131072k |
+| Chain | Starting RS component | Reborn tiers in crafting order |
+| --- | --- | --- |
+| Items | 64k storage part | 256k → 1024k → 4096k → 16384k → 32768k → 65536k → 131072k → 262144k |
+| Fluids | 4096k fluid storage part | 16384k → 65536k → 262144k → 1048576k |
 
-Each component also costs four RS advanced processors, one quartz-enriched iron and one redstone, following ExtraStorage's component recipe layout. The first tier explicitly requires `extrastorage:storagepart_16384k`; subsequent tiers require the preceding Reborn component. A component plus an RS storage housing makes the disk. Filled disks are never recipe ingredients. Shift-right-click an empty initialized disk to recover its component and housing.
+Each component takes three components of the preceding tier, four RS advanced processors, one quartz-enriched iron and either redstone (items) or an empty bucket (fluids). In particular, `rebornstorage:parts/storagepart_32768k` uses three `rebornstorage:larger_item_disk_part`. One k holds 1,000 items or 1,000 mB. The largest fluid disk holds 1,048,576 buckets.
 
-Storage uses RS's normal item disk implementation, with a dedicated factory ID so RS disk recovery preserves the correct tier. Capacities fit a signed 32-bit integer; this port does not change RS's aggregate numeric limits.
+The eight original disks can be assembled from glass, redstone, quartz-enriched iron and the matching Reborn component. When ExtraStorage is present, use the shaped Reborn recipe with the iron across the top. ExtraStorage owns a shapeless housing recipe that accepts components from either mod. With ExtraStorage absent, a housing and the component also assemble the original Reborn disk. The four extended item tiers always use a housing and their matching component.
+
+Shift-right-click an empty initialized disk to recover its component and housing. Crafting the next tier uses loose components, so disks containing items or fluids stay intact. The extended disks keep their previous registry IDs, UUIDs and storage format.
 
 ## Crafter and wireless use
 
@@ -50,7 +37,7 @@ The multiblock handles crafting recipes. Use ordinary RS/ExtraStorage crafters f
 
 This backport follows the newer Reborn CPU policy: update interval `max(5 − CPU count, 1)` ticks; successful crafting-update budget `max(CPU count, 1)` per update. These are scheduler budgets, **not measured items per second**. Output quantity, dependencies, concurrent tasks, RS scheduling and server TPS affect actual throughput.
 
-Bind the Super Wireless Grid to a network by right-clicking its controller. Use Shift-right-click or Ctrl+H to cycle modes; Ctrl+G opens it. Bindings can be changed in Controls. RSInfinityBooster cards go in the normal RS wireless transmitter. The normal grid stores 100,000 FE and follows the corresponding RS mode's energy settings and permissions. Curios adds an optional grid slot without changing other accessory slot counts.
+Bind the Super Wireless Grid to a network by right-clicking its controller. Use Shift-right-click or Ctrl+H to cycle modes; Ctrl+G opens it. Bindings can be changed in Controls. RSInfinityBooster cards work in both the standard and advanced wireless transmitters. The normal grid stores 100,000 FE and follows the corresponding RS mode's energy settings and permissions. Curios adds an optional grid slot without changing other accessory slot counts.
 
 ## Build
 
@@ -60,13 +47,15 @@ Install JDK 17 for Gradle and JDK 8 for Minecraft development runs. Set `JAVA_HO
 ./gradlew build
 ```
 
-Dependencies are version-pinned in `build.gradle` and downloaded from Forge Maven, Curse Maven and Curios Maven. No manual `libs/` copies are required. Output on this experimental branch: `build/libs/rebornstorage-1.16.5-0.1.3-experimental.4.jar`, Java 8 bytecode. The test source sets are not packaged.
+The build produces `build/libs/rebornstorage-1.16.5-0.1.4.jar` with Java 8 bytecode. Gradle resolves the pinned dependencies. The benchmark and integration test classes are excluded from the JAR.
 
 ## Verification
 
 ```sh
 # Requires acceptance of the Minecraft EULA for this disposable test server.
 python3 scripts/test_port.py --accept-eula
+# Second installation with ExtraStorage, using a separate world.
+python3 scripts/test_port.py --accept-eula --with-extra-storage --tag extra
 # Client test, after the server tests; requires an available display.
 python3 scripts/test_port.py --client
 # Headless Linux alternative:
@@ -76,6 +65,8 @@ xvfb-run -a python3 scripts/test_port.py --client
 The server suite runs twice, including a real save/restart. The client suite uses a disposable copy of that world, exercises the actual networked menus and captures screenshots. All test data stays in the ignored `run/` directory; the tests do not touch Prism instances. See [port and verification notes](docs/PORT-1.16.5.md).
 
 ## Performance measurements
+
+The guarded crafting engine from experimental.4 is included in 0.1.4. Its measurements cover Cuboid Outpost LE, a reduced Forge installation and a network using only ExtraStorage disks. [Full-pack and 64³ results](docs/benchmarks/2026-11-18-release4/README.md)
 
 The [complete 0.1.2 campaign](docs/benchmarks/2026-11-18-full-0.1.2/README.md) measures solid **4³, 8³, 16³, 32³ and 64³** structures at idle and during continuous simple and nested crafting. It includes raw results, tick timings, memory, startup costs and a comparison with 0.1.1. These are isolated dedicated-server tests, not a full Cuboid Outpost world.
 
@@ -87,7 +78,7 @@ python3 scripts/benchmark_port.py --sizes 32 --controller-capacity 2000000 --tag
 python3 scripts/benchmark_port.py --sizes 64 --controller-capacity 2000000 --property bench.maxWindowSeconds=240 --property bench.maxWarmupSeconds=120 --tag local-benchmark-64
 ```
 
-RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The comparison uses matching workloads and controller capacities for both versions; the full modpack has not been benchmarked. Benchmark sources are excluded from the release JAR.
+RS 1.9.17 checks the controller's energy buffer even for a creative controller. Large structures need a sufficiently large buffer as well as adequate power. Version 0.1.1 coalesces pattern updates and exposes one aggregate RS node per multiblock. The comparison uses matching workloads and controller capacities for both versions; that comparison used the reduced Forge installation. Benchmark sources are excluded from the release JAR.
 
 The [two ms/tick investigations](docs/investigations/2026-11-18-mspt/README.md) add a JFR profile, listener-count probes and a one-versus-four-order comparison. They identify remaining optimization work; production code and the release JAR are unchanged by those investigations.
 

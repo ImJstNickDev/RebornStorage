@@ -201,10 +201,39 @@ public class PortClientTest {
             "page packet synchronizes second page");
         screenshot(mc, "multiblock-page-2");
       }
+      if (age == 290) {
+        mc.player.closeContainer();
+        mc.getSingleplayerServer().execute(() -> {
+          ServerPlayerEntity player = mc.getSingleplayerServer().getPlayerList().getPlayer(mc.player.getUUID());
+          BlockPos pos = new BlockPos(1, 81, 0);
+          net.minecraft.block.BlockState state = player.level.getBlockState(pos);
+          state.use(player.level, player, Hand.MAIN_HAND, new net.minecraft.util.math.BlockRayTraceResult(
+              net.minecraft.util.math.vector.Vector3d.atCenterOf(pos), net.minecraft.util.Direction.UP, pos, false));
+        });
+      }
+      if (age == 305) {
+        check(mc.screen instanceof net.gigabit101.rebornstorage.client.screens.AdvancedWirelessTransmitterScreen,
+            "advanced transmitter screen opens");
+        check(net.gigabit101.rebornstorage.blockentities.BlockEntityAdvancedWirelessTransmitter.RANGE.getValue() == 1500,
+            "saved range synchronized to client");
+        screenshot(mc, "advanced-transmitter");
+        mc.getSingleplayerServer().execute(() -> {
+          net.gigabit101.rebornstorage.blockentities.BlockEntityAdvancedWirelessTransmitter tile =
+              (net.gigabit101.rebornstorage.blockentities.BlockEntityAdvancedWirelessTransmitter)
+                  mc.getSingleplayerServer().overworld().getBlockEntity(new BlockPos(1,81,0));
+          tile.getNode().getUpgrades().extractItem(0, 1, false);
+        });
+      }
       if (age == 320) {
+        check(net.gigabit101.rebornstorage.blockentities.BlockEntityAdvancedWirelessTransmitter.RANGE.getValue() == 1000,
+            "open transmitter screen updates range after upgrade removal");
+        for (net.minecraftforge.fml.RegistryObject<net.minecraft.item.Item> entry : ModItems.ITEMS.getEntries()) {
+          check(mc.getItemRenderer().getModel(new ItemStack(entry.get()), mc.level, mc.player)
+              != mc.getModelManager().getMissingModel(), "baked model for " + entry.getId());
+        }
         Files.write(
             Paths.get("port-client-result.txt"),
-            "PASS: wireless screens and both crafter pages\n"
+            "PASS: wireless screens, crafter pages, advanced transmitter range and item models\n"
                 .getBytes(java.nio.charset.StandardCharsets.UTF_8));
         mc.stop();
       }

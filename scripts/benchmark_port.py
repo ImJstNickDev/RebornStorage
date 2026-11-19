@@ -28,6 +28,7 @@ subprocess.run(
         "gradlew",
         "runServer",
         "-Pbenchmark",
+        *(["-PwithExtraStorage"] if "bench.extraStorageDisks=true" in a.property else []),
         "-PexportLaunch",
         "--console=plain",
     ],

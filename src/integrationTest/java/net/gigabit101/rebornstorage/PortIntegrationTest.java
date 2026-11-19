@@ -10,6 +10,9 @@ import java.util.UUID;
 import net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter;
 import net.gigabit101.rebornstorage.init.ModBlocks;
 import net.gigabit101.rebornstorage.items.ItemRebornStorageCell;
+import net.gigabit101.rebornstorage.storage.DiskTier;
+import net.gigabit101.rebornstorage.blockentities.BlockEntityAdvancedWirelessTransmitter;
+import net.gigabit101.rebornstorage.nodes.AdvancedWirelessTransmitterNode;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
@@ -127,6 +130,14 @@ public class PortIntegrationTest {
                   && API.instance().getStorageDiskManager(world).getByStack(savedDisk) != null,
               "disk UUID resolves after actual server restart");
         }
+        if (Files.exists(Paths.get("restart-marker.txt"))) {
+          AdvancedWirelessTransmitterNode tx = ((BlockEntityAdvancedWirelessTransmitter) world.getBlockEntity(new BlockPos(1,81,0))).getNode();
+          check(tx.getRange() == 1500, "advanced transmitter upgrade survives actual restart");
+          ItemStack fluidStack = ((com.refinedmods.refinedstorage.tile.DiskDriveTile) world.getBlockEntity(new BlockPos(0,80,0))).getNode().getDisks().getStackInSlot(1);
+          IStorageDisk<net.minecraftforge.fluids.FluidStack> fluidDisk = API.instance().getStorageDiskManager(world).getByStack(fluidStack);
+          check(fluidDisk.getFactoryId().equals(net.gigabit101.rebornstorage.storage.RebornFluidDiskFactory.ID)
+              && fluidDisk.getStored() == 1000000000 && fluidDisk.getCapacity() == 1048576000, "billion-mB drive survives actual restart");
+        }
         disks(world);
         for (int x = 0; x < 6; x++)
           for (int y = 80; y < 84; y++)
@@ -175,9 +186,7 @@ public class PortIntegrationTest {
             .getNode()
             .getInputDisks()
             .insertItem(0, sourceDisk, false);
-        Block transmitter =
-            ForgeRegistries.BLOCKS.getValue(
-                new ResourceLocation("refinedstorage:wireless_transmitter"));
+        Block transmitter = ModBlocks.ADVANCED_TRANSMITTER.get();
         world.setBlockAndUpdate(
             new BlockPos(1, 81, 0),
             transmitter
@@ -199,6 +208,10 @@ public class PortIntegrationTest {
             .getNode()
             .getDisks()
             .insertItem(0, storageDisk, false);
+        ItemStack fluidDisk = new ItemStack(DiskTier.FLUID_1048576.disk().get());
+        ((ItemRebornStorageCell) fluidDisk.getItem()).inventoryTick(fluidDisk, world, player(world), 0, false);
+        ((com.refinedmods.refinedstorage.tile.DiskDriveTile) world.getBlockEntity(new BlockPos(0,80,0)))
+            .getNode().getDisks().insertItem(1, fluidDisk, false);
       }
       if (tick == 60) {
         BlockEntityMultiCrafter tile = (BlockEntityMultiCrafter) world.getBlockEntity(STORAGE);
@@ -213,6 +226,10 @@ public class PortIntegrationTest {
                 && tile.getNode().getMaximumSuccessfulCraftingUpdates() == 6,
             "recent Reborn CPU budget");
         check(tile.getNode().getNetwork() != null, "connected to RS controller");
+        net.minecraftforge.fluids.FluidStack water = new net.minecraftforge.fluids.FluidStack(net.minecraft.fluid.Fluids.WATER, 1);
+        check(tile.getNode().getNetwork().insertFluid(water, 1000000000, Action.PERFORM).isEmpty()
+            && tile.getNode().getNetwork().extractFluid(water, 1000000001, Action.SIMULATE).getAmount() == 1000000000,
+            "drive accepts one billion mB through RS network");
         wireless(world, tile.getNode().getNetwork());
         viewersAndSecurity(world, tile);
         UUID owner = UUID.randomUUID();
@@ -708,13 +725,18 @@ public class PortIntegrationTest {
 
   private static void wireless(
       ServerWorld world, com.refinedmods.refinedstorage.api.network.INetwork network) {
-    com.refinedmods.refinedstorage.apiimpl.network.node.WirelessTransmitterNetworkNode transmitter =
-        ((com.refinedmods.refinedstorage.tile.WirelessTransmitterTile)
+    AdvancedWirelessTransmitterNode transmitter =
+        ((BlockEntityAdvancedWirelessTransmitter)
                 world.getBlockEntity(new BlockPos(1, 81, 0)))
             .getNode();
     check(
         transmitter.getNetwork() == network && transmitter.isActive(),
         "wireless transmitter connected");
+    check(transmitter.getRange() == 1000 && transmitter.getEnergyUsage() == 100, "advanced transmitter defaults");
+    ItemStack upgrade = new ItemStack(ForgeRegistries.ITEMS.getValue(new ResourceLocation("refinedstorage:range_upgrade")));
+    for (int slot = 0; slot < 4; slot++) transmitter.getUpgrades().insertItem(slot, upgrade.copy(), false);
+    check(transmitter.getRange() == 3000, "all four range upgrades apply");
+    for (int slot = 0; slot < 4; slot++) transmitter.getUpgrades().extractItem(slot, 1, false);
     for (String card : new String[] {"infinity_card", "dimension_card"}) {
       transmitter
           .getUpgrades()
@@ -782,6 +804,7 @@ public class PortIntegrationTest {
       check(
           network.getNetworkItemManager().getItem(player) == null, card + " rejects empty battery");
     }
+    transmitter.getUpgrades().setStackInSlot(0, upgrade);
   }
 
   @SuppressWarnings("unchecked")
@@ -847,10 +870,14 @@ public class PortIntegrationTest {
   private static void disks(ServerWorld world) {
     FakePlayer player =
         FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), "PortTest"));
-    for (int k : new int[] {32768, 65536, 131072, 262144}) {
-      ItemRebornStorageCell item =
-          (ItemRebornStorageCell)
-              ForgeRegistries.ITEMS.getValue(new ResourceLocation("rebornstorage:disk_" + k + "k"));
+    StorageContentTest.recipes(world, player);
+    for (DiskTier tier : DiskTier.values()) {
+      if (tier.type == com.refinedmods.refinedstorage.api.storage.StorageType.FLUID) {
+        StorageContentTest.fluid(world, player, tier);
+        continue;
+      }
+      int k = tier.capacity / 1000;
+      ItemRebornStorageCell item = (ItemRebornStorageCell) tier.disk().get();
       ItemStack stack = new ItemStack(item);
       stack.setHoverName(new net.minecraft.util.text.StringTextComponent("Keep my name"));
       item.inventoryTick(stack, world, player, 0, false);
@@ -866,6 +893,14 @@ public class PortIntegrationTest {
         testDiskChanges(disk);
       }
       check(disk.getCapacity() == k * 1000, k + "k exact decimal capacity");
+      ItemStack stone = new ItemStack(Items.COBBLESTONE);
+      disk.insert(stone, 3, Action.PERFORM);
+      int hugeRemainder = Integer.MAX_VALUE - disk.getCapacity() + 3;
+      check(disk.insert(stone, Integer.MAX_VALUE, Action.SIMULATE).getCount() == hugeRemainder
+              && disk.getStored() == 3
+              && disk.insert(stone, Integer.MAX_VALUE, Action.PERFORM).getCount() == hugeRemainder
+              && disk.extract(stone, Integer.MAX_VALUE, 0, Action.PERFORM).getCount() == disk.getCapacity(),
+          k + "k maximum transfer keeps total and remainder exact");
       check(
           disk.insert(new ItemStack(Items.COBBLESTONE), k * 1000, Action.PERFORM).isEmpty(),
           k + "k fills to capacity");
@@ -900,18 +935,7 @@ public class PortIntegrationTest {
               == com.refinedmods.refinedstorage.RSItems.STORAGE_HOUSING.get(),
           k + "k empty disk disassembles");
       player.setShiftKeyDown(false);
-      check(
-          world
-              .getRecipeManager()
-              .byKey(new ResourceLocation("rebornstorage:disk_" + k + "k"))
-              .isPresent(),
-          k + "k disk recipe loaded");
-      check(
-          world
-              .getRecipeManager()
-              .byKey(new ResourceLocation("rebornstorage:parts/storagepart_" + k + "k"))
-              .isPresent(),
-          k + "k component recipe loaded");
+      check(player.inventory.contains(new ItemStack(tier.part().get())), k + "k recovers its own component");
     }
   }
 }

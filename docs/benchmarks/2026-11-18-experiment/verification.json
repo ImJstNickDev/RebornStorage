@@ -1,0 +1,88 @@
+{
+  "source_commit": "2d1e35f",
+  "active_windows": 42,
+  "active_ticks": 10080,
+  "cases": [
+    {
+      "mode": "off",
+      "size": 32,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    },
+    {
+      "mode": "pattern",
+      "size": 32,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    },
+    {
+      "mode": "task",
+      "size": 4,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    },
+    {
+      "mode": "task",
+      "size": 8,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    },
+    {
+      "mode": "task",
+      "size": 16,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    },
+    {
+      "mode": "task",
+      "size": 32,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    },
+    {
+      "mode": "task",
+      "size": 64,
+      "active_windows": 6,
+      "active_ticks": 1440,
+      "exit_code": 0,
+      "positive_output": true,
+      "all_windows_complete": true
+    }
+  ],
+  "identical_output_totals_32": {
+    "off": {
+      "simple": 73977260,
+      "nested": 6938743
+    },
+    "pattern": {
+      "simple": 73977260,
+      "nested": 6938743
+    },
+    "task": {
+      "simple": 73977260,
+      "nested": 6938743
+    }
+  },
+  "identical_output_totals_64": {
+    "simple": 653015980,
+    "nested": 61250039
+  }
+}

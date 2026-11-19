@@ -38,7 +38,7 @@ public class CoalescingCraftingMonitorContainer extends CraftingMonitorContainer
 
   @Override
   public void onChanged() {
-    if (!closed && !getPlayer().level.isClientSide && !dirty) {
+    if (!dirty && !closed && !getPlayer().level.isClientSide) {
       dirty = true;
       pending.add(this);
     }

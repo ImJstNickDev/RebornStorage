@@ -6,6 +6,10 @@ import com.refinedmods.refinedstorage.api.storage.disk.StorageDiskSyncData;
 import com.refinedmods.refinedstorage.apiimpl.API;
 import com.refinedmods.refinedstorage.render.Styles;
 import net.gigabit101.rebornstorage.client.CreativeTabRebornStorage;
+import com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskFactory;
+import net.gigabit101.rebornstorage.storage.DiskTier;
+import net.gigabit101.rebornstorage.storage.RebornItemDiskFactory;
+import net.gigabit101.rebornstorage.storage.RebornFluidDiskFactory;
 import net.minecraft.util.text.StringTextComponent;
 import net.minecraft.util.text.TranslationTextComponent;
 import net.minecraft.world.server.ServerWorld;
@@ -23,14 +27,12 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
 {
     private static final String NBT_ID = "id";
 
-    private final int capacity;
-    private final StorageType storageType;
+    private final DiskTier tier;
 
-    public ItemRebornStorageCell(int capacity, StorageType storageType)
+    public ItemRebornStorageCell(DiskTier tier)
     {
         super(new Item.Properties().tab(CreativeTabRebornStorage.INSTANCE).stacksTo(1));
-        this.capacity = capacity;
-        this.storageType = storageType;
+        this.tier = tier;
     }
 
     @Override
@@ -40,7 +42,8 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
         if (!world.isClientSide && !isValid(stack) && entity instanceof PlayerEntity)
         {
             UUID id = UUID.randomUUID();
-            API.instance().getStorageDiskManager((ServerWorld) world).set(id, net.gigabit101.rebornstorage.storage.RebornItemDiskFactory.INSTANCE.create((ServerWorld) world, getCapacity(stack), entity.getUUID()));
+            IStorageDiskFactory<?> factory = tier.type == StorageType.FLUID ? RebornFluidDiskFactory.INSTANCE : RebornItemDiskFactory.INSTANCE;
+            API.instance().getStorageDiskManager((ServerWorld) world).set(id, factory.create((ServerWorld) world, tier.capacity, entity.getUUID()));
             API.instance().getStorageDiskManager((ServerWorld) world).markForSaving();
             setId(stack, id);
         }
@@ -87,15 +90,11 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
             com.refinedmods.refinedstorage.api.storage.disk.IStorageDisk<?> disk = manager.getByStack(stack);
             if (disk != null && disk.getStored() == 0)
             {
-                Item part = net.minecraftforge.registries.ForgeRegistries.ITEMS.getValue(new net.minecraft.util.ResourceLocation("rebornstorage", "storagepart_" + (capacity / 1000) + "k"));
-                if (part != null)
-                {
-                    ItemStack component = new ItemStack(part);
-                    if (!player.inventory.add(component)) player.drop(component, false);
-                    manager.remove(getId(stack));
-                    manager.markForSaving();
-                    return net.minecraft.util.ActionResult.success(new ItemStack(com.refinedmods.refinedstorage.RSItems.STORAGE_HOUSING.get()));
-                }
+                ItemStack component = new ItemStack(tier.part().get());
+                if (!player.inventory.add(component)) player.drop(component, false);
+                manager.remove(getId(stack));
+                manager.markForSaving();
+                return net.minecraft.util.ActionResult.success(new ItemStack(com.refinedmods.refinedstorage.RSItems.STORAGE_HOUSING.get()));
             }
         }
         return net.minecraft.util.ActionResult.pass(stack);
@@ -128,12 +127,12 @@ public class ItemRebornStorageCell extends Item implements IStorageDiskProvider
     @Override
     public int getCapacity(ItemStack disk)
     {
-        return this.capacity;
+        return tier.capacity;
     }
 
     @Override
     public StorageType getType()
     {
-        return storageType;
+        return tier.type;
     }
 }

@@ -7,7 +7,7 @@ authors = "gigabit101" #optional
 modId = "rebornstorage" #mandatory
 version = "${file.jarVersion}" #mandatory
 displayName = "Reborn Storage (1.16.5 Backport)" #mandatory
-description = '''Unofficial Forge 1.16.5 backport: multiblock crafter, three-mode Super Wireless Grid and four item disk tiers above ExtraStorage 16384k.'''
+description = '''Unofficial Forge 1.16.5 backport: multiblock crafter, three-mode Super Wireless Grid with an advanced transmitter and twelve item and fluid disk tiers.'''
 
 [[dependencies.rebornstorage]]
 modId = "forge"
@@ -27,12 +27,5 @@ side = "BOTH"
 modId = "refinedstorage"
 mandatory = true
 versionRange = "[1.9.17,1.10)"
-ordering = "AFTER"
-side = "BOTH"
-
-[[dependencies.rebornstorage]]
-modId = "extrastorage"
-mandatory = true
-versionRange = "[1.6.1,)"
 ordering = "AFTER"
 side = "BOTH"

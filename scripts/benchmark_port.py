@@ -28,6 +28,7 @@ subprocess.run(
         "gradlew",
         "runServer",
         "-Pbenchmark",
+        *(["-PwithExtraStorage"] if "bench.extraStorageDisks=true" in a.property else []),
         "-PexportLaunch",
         "--console=plain",
     ],
@@ -89,7 +90,7 @@ for size in a.sizes:
         "-Dbench.repeats=" + str(a.repeats),
     ]
     for prop in a.property:
-        assert prop.startswith("bench.") and "=" in prop
+        assert "=" in prop and (prop.startswith("bench.") or prop.startswith("reborn.craftingExperiment="))
         cmd.insert(1, "-D" + prop)
     if a.jfr:
         cmd[1:1] = ["-XX:+FlightRecorder", "-XX:FlightRecorderOptions=stackdepth=128",

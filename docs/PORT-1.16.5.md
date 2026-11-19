@@ -2,19 +2,9 @@
 
 ## Baseline and scope
 
-Implemented backport, version `1.16.5-0.1.2`, branch `port/forge-1.16.5`.
-Upstream baseline: `TechReborn/RebornStorage`, branch `1.18.2`, commit
-`fcbd0496e360ba370d1115910f6e6dd61d19ab52`. This is an unofficial fork.
+Version `1.16.5-0.1.4` targets Forge 36.2.26 and Refined Storage 1.9.17. The upstream content baseline is `TechReborn/RebornStorage` 1.18.2 at `fcbd0496e360ba370d1115910f6e6dd61d19ab52`. This unofficial port includes the original four item tiers, four fluid tiers, components, processors, transmitter, multiblock, wireless grids and optional Patchouli guide. It also retains the four extended item tiers and the opt-in crafting engine.
 
-Targets Forge 36.2.26 / RS 1.9.17, with ExtraStorage 1.6.1 and optional
-RSInfinityBooster 1.16.5-1.1+13 and Curios 4.0.8.2. No changes have been
-installed into the user's Prism modpack.
-
-The retained features are the multiblock crafter, all three Super Wireless Grid
-modes and four item disk tiers above ExtraStorage's 16384k. Lower duplicate disks,
-fluid disks, the advanced transmitter and the unregistered Patchouli guide are
-excluded. The creative grid remains for testing. README documents controls,
-construction, dependencies and recipes.
+The [installation and recipe guide](../README.md) lists all capacities, configurations and optional integrations.
 
 ## Implementation decisions
 
@@ -45,19 +35,22 @@ construction, dependencies and recipes.
   `max(5-cpus,1)`, successful-update budget `max(cpus,1)`. The old 1.18.2
   `cpus/5` policy was not retained. RS applies this budget per recipe node/container,
   not as a shared time budget; aggregation avoids multiplying it for duplicate storage providers.
-- The normal RS wireless transmitter remains the integration point for both
-  RSInfinityBooster cards. Every mode uses INetworkItemProvider, energy checks
-  and RS permissions; a stopped network is rejected even on the booster path.
-- Disks preserve unrelated NBT when assigning UUIDs. A dedicated
-  `rebornstorage:item` factory delegates storage mechanics to RS, supports
-  persisted contents and recovers the correct disk item instead of an RS
-  creative disk. Empty-disk disassembly refuses nonempty/missing storage data.
-- New component recipes chain 3× the prior tier plus ExtraStorage-style support
-  ingredients. The installed ExtraStorage 16384k recipe was inspected; searches
-  of the pack's KubeJS scripts found no ExtraStorage/16384 recipe override.
-  No recipe consumes a filled disk.
+- The advanced transmitter extends the native RS transmitter node. This lets both RSInfinityBooster cards use the same inventory, power accounting and network hooks as the ordinary transmitter. The advanced node visits the attached face in all six orientations.
+- Reborn disks store their UUID in the normal RS disk item tag. The item and fluid factories restore the original tier, owner and tagged contents. Disk type disambiguates equal item and fluid capacities. Disassembly requires an empty disk and returns the matching component.
+- Every extended item tier follows the Reborn component chain. The original crafting patterns use an inverted vertical layout to coexist with ExtraStorage. Shared RS tags remain available to other mods.
+- The upstream standalone book item was commented out in the 1.18.2 registry. The optional guide uses Patchouli's native book item and a conditional recipe.
 
-## Automated verification
+## Verification of 0.1.4 on Forge 36.2.26
+
+- Two dedicated server starts with the TASK engine and ExtraStorage absent passed 189 and 195 integration assertions. Each start also checked the twelve disk and component recipes, RS tags, fluid capacity limits, NBT and disk recovery. A drive stored 1,000,000,000 mB and retained it across the real restart.
+- Two dedicated server starts with the default engine and ExtraStorage 1.6.1 passed 179 and 185 integration assertions. Each Reborn component and each advertised assembly layout had exactly one crafting-table result.
+- The client opened all three wireless modes, both pattern pages and the advanced transmitter menu. Its displayed range changed from 1,500 to 1,000 blocks after upgrade removal. The active monitor displayed 35 distinct counts with a maximum observed gap of one client tick.
+- A production Forge server with only the release JAR and RS 1.9.17 upgraded a copy of an experimental.4 world. A pending 4,000-stick order resumed from 96 sticks and finished with exactly 4,000. The 32768k disk kept its capacity and UUID.
+- A full Cuboid Outpost LE 1.1.2 client joined a separate dedicated server using the release JAR. A grid equipped in Curios opened all three modes. During a nested 32,000-stick order the structure's chunk was absent for 45 consecutive server ticks. Reload restored the disk and order UUIDs. The client showed 32,000 sticks and the server had zero logs, planks or pending orders.
+- On a fresh Cuboid dedicated server, after KubeJS finished loading, the crafting-table check found a single matching recipe for each of the twelve components and twelve disks. It also verified all RS tier tags, the transmitter recipe and the Patchouli guide result with its book ID.
+- The tested release JAR has SHA-256 `2bcd51569621ee1a18f7fab1373b0221e262c4c838affb426e3aee64efefe296` and class-file version 52 (Java 8).
+
+## Verification of the original 0.1.2 baseline
 
 Verified on 2026-11-18: build/reobfuscation succeeds; the server suite passes
 **128 checks plus 20 local-optimization checks on each of two consecutive starts**, including an in-flight
@@ -111,7 +104,7 @@ running Minecraft directly as a child of Gradle in this environment. Server test
 run twice. Logs are in `run/integration/test-1.log` and `test-2.log`; client logs
 and screenshots stay in `run/client/`.
 
-## Remaining validation limits
+## Scope of the 0.1.2 tests
 
 The targeted dependency set is tested; the full Cuboid Outpost pack is not.
 Client GUI testing uses an integrated server, while the separate dedicated-server

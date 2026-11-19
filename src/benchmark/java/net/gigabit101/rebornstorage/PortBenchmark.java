@@ -17,7 +17,6 @@ import java.util.*;
 import net.gigabit101.rebornstorage.blockentities.BlockEntityMultiCrafter;
 import net.gigabit101.rebornstorage.init.ModBlocks;
 import net.gigabit101.rebornstorage.init.ModItems;
-import net.gigabit101.rebornstorage.items.ItemRebornStorageCell;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
@@ -117,6 +116,14 @@ public class PortBenchmark {
     world = server.overworld();
     check(CONCURRENT >= 1 && CONCURRENT <= 4, "Diagnostic concurrency must be 1..4");
     result.put("concurrent_orders", CONCURRENT);
+    result.put(
+        "crafting_experiment",
+        net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode().name());
+    if (Boolean.getBoolean("bench.inspectCapabilities")) {
+      result.put(
+          "plain_output_hooks",
+          net.gigabit101.rebornstorage.crafting.CapabilityPolicyProbe.plain());
+    }
     result.put("count_listeners", COUNT_LISTENERS);
     result.put("monitor_encoding", System.getProperty("bench.monitor", "none"));
     result.put("size", SIZE);
@@ -225,18 +232,35 @@ public class PortBenchmark {
               ForgeRegistries.BLOCKS
                   .getValue(new ResourceLocation("refinedstorage:disk_drive"))
                   .defaultBlockState());
-          ItemStack disk = new ItemStack(ModItems.DISK_262144K.get());
-          ((ItemRebornStorageCell) disk.getItem())
-              .inventoryTick(
-                  disk,
-                  world,
-                  FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), "Benchmark")),
-                  0,
-                  false);
-          ((DiskDriveTile) world.getBlockEntity(CONTROLLER.west()))
-              .getNode()
-              .getDisks()
-              .insertItem(0, disk, false);
+          boolean extraStorage = Boolean.getBoolean("bench.extraStorageDisks");
+          Item diskItem =
+              extraStorage
+                  ? ForgeRegistries.ITEMS.getValue(
+                      new ResourceLocation("extrastorage", "disk_16384k"))
+                  : ModItems.DISK_262144K.get();
+          check(
+              diskItem
+                  instanceof com.refinedmods.refinedstorage.api.storage.disk.IStorageDiskProvider,
+              "Missing benchmark disk");
+          int count = extraStorage ? 8 : 1;
+          result.put("disk_item", diskItem.getRegistryName().toString());
+          result.put("disk_count", count);
+          for (int slot = 0; slot < count; slot++) {
+            ItemStack disk = new ItemStack(diskItem);
+            diskItem.inventoryTick(
+                disk,
+                world,
+                FakePlayerFactory.get(world, new GameProfile(UUID.randomUUID(), "Benchmark")),
+                0,
+                false);
+            check(
+                ((DiskDriveTile) world.getBlockEntity(CONTROLLER.west()))
+                    .getNode()
+                    .getDisks()
+                    .insertItem(slot, disk, false)
+                    .isEmpty(),
+                "Cannot install benchmark disk");
+          }
           phase("connecting");
         } else if (phaseTicks > 400)
           throw new IllegalStateException(
@@ -492,6 +516,26 @@ public class PortBenchmark {
       ICalculationResult calc =
           network.getCraftingManager().create(new ItemStack(outputItem()), qty);
       check(calc.isOk(), "Craft calculation failed " + calc.getType());
+      if (net.gigabit101.rebornstorage.crafting.CraftingExperiment.mode()
+          == net.gigabit101.rebornstorage.crafting.CraftingExperiment.Mode.TASK) {
+        check(
+            calc.getTask() instanceof net.gigabit101.rebornstorage.crafting.ExperimentalTask,
+            "Experimental task was not selected");
+        long optimized =
+            ((net.gigabit101.rebornstorage.crafting.ExperimentalTask) calc.getTask())
+                .getOptimizedNodeCount();
+        check(
+            optimized == (workload == 0 ? 1 : 5),
+            "Expected all benchmark recipe nodes to use optimized requirements");
+        long plans =
+            ((net.gigabit101.rebornstorage.crafting.ExperimentalTask) calc.getTask())
+                .getIntermediatePlanCount();
+        check(
+            plans == (workload == 0 ? 0 : 4),
+            "Expected all four nested intermediates to use guarded plans, got " + plans);
+        result.put("verified_intermediate_plans_" + (workload == 0 ? "simple" : "nested"), plans);
+        result.put("verified_optimized_nodes_" + (workload == 0 ? "simple" : "nested"), optimized);
+      }
       network.getCraftingManager().start(calc.getTask());
       jobs++;
     }
